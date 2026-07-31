@@ -521,7 +521,7 @@
   /* ---------- Screen 12: handwritten letter ---------- */
   // Edit these lines to change the letter. Order = writing order.
   const letterLines = [
-    { text: 'Dear AANYA SHARMA,', cls: 'salutation' },
+    { text: 'Dear Vinmaa,', cls: 'salutation' },
     { text: 'Happy Birthday to someone truly special! 🎂' },
     { text: 'You are sweet, loyal, my rock, and I’m so grateful to have you in my life.' },
     { text: 'You bring so much warmth and sweetness into my life. Every moment with you is precious.' },
