@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#ffd6e0" />
+  <title>Happy Birthday, Vinimaa 🎂</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Dancing+Script:wght@600;700&family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎂%3C/text%3E%3C/svg%3E" />
+</head>
+<body>
+
+  <!-- Ambient floating hearts (background layer) -->
+  <div class="hearts-bg" aria-hidden="true"></div>
+
+  <main id="app">
+
+    <!-- ============ SCREEN 1: WELCOME ============ -->
+    <section class="screen active" data-screen="welcome">
+      <div class="stack">
+        <h1 class="title-script">Happy Birthday,</h1>
+        <h2 class="title-name">Vinimaa</h2>
+
+        <div class="bunting" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+
+        <div class="hero-cake">
+          <!-- Replace with your own illustration in images/hero-cake.png if you like -->
+          <div class="bears">
+            <div class="bear bear-brown">🧸</div>
+            <div class="cake-mini">
+              <div class="candle-mini"><span class="flame-mini"></span></div>
+              🎂
+            </div>
+            <div class="bear bear-panda">🐼</div>
+          </div>
+        </div>
+
+        <p class="prompt">Are you excited for what’s next?</p>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="yesBtn">Yes</button>
+          <button class="btn btn-ghost" id="noBtn">No</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN 2: BALLOON POP ============ -->
+    <section class="screen" data-screen="balloons">
+      <div class="stack">
+        <h2 class="title-pink">Pop all 4 balloons</h2>
+        <p class="subtle">Tap each one 💕</p>
+
+        <div class="balloon-field" id="balloonField">
+          <button class="balloon" data-color="pink"   style="--x:20%; --y:15%; --d:0s;">🎈</button>
+          <button class="balloon" data-color="green"  style="--x:70%; --y:25%; --d:.4s;">🎈</button>
+          <button class="balloon" data-color="purple" style="--x:35%; --y:55%; --d:.8s;">🎈</button>
+          <button class="balloon" data-color="yellow" style="--x:75%; --y:65%; --d:1.2s;">🎈</button>
+        </div>
+
+        <p class="counter"><span id="popped">0</span> / 4 popped</p>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN 3: BLOW THE CANDLE ============ -->
+    <section class="screen" data-screen="candle">
+      <div class="stack">
+        <h2 class="title-dark">Blow the candle, <span class="pink">AANYA SHARMA</span></h2>
+
+        <div class="cake-wrap" id="cakeWrap">
+          <div class="cake-big">
+            <div class="candle">
+              <span class="flame" id="flame"></span>
+            </div>
+            <div class="frosting"></div>
+            <div class="cake-body"></div>
+            <div class="plate"></div>
+          </div>
+        </div>
+
+        <button class="btn btn-blow" id="blowBtn">
+          <span class="wind">💨</span> Tap to blow the candle
+        </button>
+        <p class="tiny" id="micHint">Tip: allow the mic and actually blow — or just tap.</p>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN 4: MAKE A WISH ============ -->
+    <section class="screen" data-screen="wish">
+      <div class="stack">
+        <h2 class="title-dark">Blow the candle, <span class="pink">AANYA SHARMA</span></h2>
+
+        <div class="cake-wrap dim">
+          <div class="cake-big">
+            <div class="candle no-flame">
+              <span class="smoke"></span>
+              <span class="smoke s2"></span>
+            </div>
+            <div class="frosting"></div>
+            <div class="cake-body">
+              <div class="wish-text">
+                <div>Close your</div>
+                <div class="big">eyes</div>
+                <div>&amp; make a wish</div>
+              </div>
+            </div>
+            <div class="plate"></div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary sm" id="wishDoneBtn">Wish made ✨</button>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN 5: ROSE BOUQUET ============ -->
+    <section class="screen" data-screen="roses">
+      <div class="stack">
+        <h2 class="title-script sm">Your Rose Bouquet <span class="rose">🌹</span></h2>
+
+        <div class="bouquet">
+          <!-- Placeholder: swap with images/bouquet.png if you have one -->
+          <div class="bouquet-emoji">💐</div>
+          <div class="petals" aria-hidden="true"></div>
+        </div>
+
+        <button class="btn btn-primary" id="rosesContinue">Continue →</button>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN 6: SWEET MOMENTS ============ -->
+    <section class="screen" data-screen="memories">
+      <div class="stack">
+        <h2 class="title-pink big">Some Sweet Moments</h2>
+        <p class="subtle">(Swipe / drag the cards)</p>
+
+        <div class="deck" id="deck">
+          <!-- Cards are injected by JS; drop your photos in images/memories/ -->
+        </div>
+
+        <button class="btn btn-primary sm hidden" id="memoriesContinue">Continue →</button>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN 7: THE ENVELOPE ============ -->
+    <section class="screen" data-screen="envelope">
+      <div class="stack">
+        <h2 class="title-dark letter-heading">A Message From My Heart</h2>
+
+        <button class="envelope" id="envelope" aria-label="Open the letter">
+          <span class="env-back" aria-hidden="true"></span>
+          <span class="env-note" aria-hidden="true"></span>
+          <span class="env-front" aria-hidden="true"></span>
+          <span class="env-flap" aria-hidden="true"></span>
+          <span class="env-seal" aria-hidden="true">💗</span>
+        </button>
+
+        <p class="tiny env-hint" id="envHint">Tap the envelope to open 💌</p>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN 8: THE HANDWRITTEN LETTER ============ -->
+    <section class="screen" data-screen="letter">
+      <div class="stack">
+        <h2 class="title-dark letter-heading">A Message From My Heart</h2>
+
+        <div class="letter-card" id="letterCard">
+          <div class="letter-badge" aria-hidden="true">♥</div>
+          <div class="letter-body" id="letterBody"></div>
+          <div class="letter-bears" aria-hidden="true">🧸🐼</div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-ghost sm" id="skipTyping">Skip ⏩</button>
+          <button class="btn btn-primary sm hidden" id="letterContinue">Continue →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN 9: FINAL MESSAGE ============ -->
+    <section class="screen" data-screen="final">
+      <div class="stack final">
+        <div class="confetti" aria-hidden="true"></div>
+        <h1 class="title-script big">Happy Birthday, my love</h1>
+        <p class="love-note">
+          Every day with you feels like a celebration.<br/>
+          Thank you for being the most beautiful chapter of my life.<br/>
+          Here’s to us, always. 💗
+        </p>
+        <p class="signed">— Yours forever</p>
+        <button class="btn btn-ghost" id="restartBtn">Play again 🔁</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Audio (optional). Drop a file at audio/song.mp3 to enable background music. -->
+  <audio id="bgm" loop preload="none">
+    <source src="audio/song.mp3" type="audio/mpeg" />
+  </audio>
+
+  <script src="js/app.js?v=4"></script>
+</body>
+</html>
