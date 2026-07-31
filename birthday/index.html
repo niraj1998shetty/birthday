@@ -147,7 +147,84 @@
       </div>
     </section>
 
-    <!-- ============ SCREEN 7: THE ENVELOPE ============ -->
+    <!-- ============ SCREEN 7: SCRATCH CARD ============ -->
+    <section class="screen" data-screen="scratch">
+      <div class="stack">
+        <h2 class="title-script sm">Scratch &amp; Reveal</h2>
+        <p class="tiny" id="scratchHint">Scratch the card with your finger ✨</p>
+
+        <div class="scratch-wrap">
+          <!-- Placeholder: swap with images/scratch-reveal.jpg to change the surprise photo -->
+          <div class="scratch-reveal">
+            <span class="scratch-reveal-emoji">🎁</span>
+            <p class="scratch-reveal-text">A surprise date night,<br/>just the two of us 💕</p>
+          </div>
+          <canvas class="scratch-canvas" id="scratchCanvas"></canvas>
+        </div>
+
+        <button class="btn btn-primary sm hidden" id="scratchContinue">Continue →</button>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN 8: SPIN THE WHEEL ============ -->
+    <section class="screen" data-screen="wheel">
+      <div class="stack">
+        <h2 class="title-script sm">Spin for a Promise</h2>
+        <p class="tiny" id="wheelHint">Whatever it lands on, I owe you 😉</p>
+
+        <div class="wheel-wrap">
+          <div class="wheel-pointer" aria-hidden="true">▼</div>
+          <div class="wheel" id="wheel"></div>
+        </div>
+
+        <button class="btn btn-primary sm" id="wheelSpinBtn">Spin the wheel 🎡</button>
+
+        <div class="coupon hidden" id="wheelResult">
+          <div class="coupon-badge" aria-hidden="true">🎟️</div>
+          <p class="coupon-text" id="wheelResultText"></p>
+          <button class="btn btn-ghost sm" id="wheelContinue">Continue →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN 9: PUZZLE REVEAL ============ -->
+    <section class="screen" data-screen="puzzle">
+      <div class="stack">
+        <h2 class="title-script sm">Piece It Together</h2>
+        <p class="tiny">Tap each tile to reveal our memory 🧩</p>
+
+        <!-- Placeholder: swap with images/puzzle-photo.jpg to change the hidden photo -->
+        <div class="puzzle-grid" id="puzzleGrid"></div>
+
+        <button class="btn btn-primary sm hidden" id="puzzleContinue">Continue →</button>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN 10: PHOTO BOOTH ============ -->
+    <section class="screen" data-screen="polaroid">
+      <div class="stack">
+        <h2 class="title-script sm">Say Cheese!</h2>
+        <p class="tiny" id="polaroidHint">Tap the shutter 📸</p>
+
+        <div class="photobooth">
+          <div class="flash" id="flash" aria-hidden="true"></div>
+          <button class="shutter-btn" id="shutterBtn" aria-label="Take the photo">
+            <span class="shutter-ring"></span>
+          </button>
+          <!-- Placeholder: swap with images/polaroid-1.jpg to change the developed photo -->
+          <div class="polaroid" id="polaroid">
+            <div class="polaroid-photo">
+              <span class="polaroid-emoji">💑</span>
+            </div>
+            <p class="polaroid-caption">Us, always &amp; forever</p>
+          </div>
+        </div>
+
+        <button class="btn btn-primary sm hidden" id="polaroidContinue">Continue →</button>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN 11: THE ENVELOPE ============ -->
     <section class="screen" data-screen="envelope">
       <div class="stack">
         <h2 class="title-dark letter-heading">A Message From My Heart</h2>
@@ -164,7 +241,7 @@
       </div>
     </section>
 
-    <!-- ============ SCREEN 8: THE HANDWRITTEN LETTER ============ -->
+    <!-- ============ SCREEN 12: THE HANDWRITTEN LETTER ============ -->
     <section class="screen" data-screen="letter">
       <div class="stack">
         <h2 class="title-dark letter-heading">A Message From My Heart</h2>
@@ -182,18 +259,36 @@
       </div>
     </section>
 
-    <!-- ============ SCREEN 9: FINAL MESSAGE ============ -->
+    <!-- ============ SCREEN 13: ONE LAST THING (GIFT) ============ -->
+    <section class="screen" data-screen="gift">
+      <div class="stack">
+        <h2 class="title-script sm">One Last Thing…</h2>
+        <p class="tiny">Tap the gift</p>
+        <button class="gift-box" id="giftBox" aria-label="Open your gift">🎁</button>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN 14: FINAL MESSAGE ============ -->
     <section class="screen" data-screen="final">
       <div class="stack final">
         <div class="confetti" aria-hidden="true"></div>
-        <h1 class="title-script big">Happy Birthday, my love</h1>
-        <p class="love-note">
-          Every day with you feels like a celebration.<br/>
-          Thank you for being the most beautiful chapter of my life.<br/>
-          Here’s to us, always. 💗
-        </p>
-        <p class="signed">— Yours forever</p>
-        <button class="btn btn-ghost" id="restartBtn">Play again 🔁</button>
+
+        <div class="final-card">
+          <div class="final-badge" aria-hidden="true">💗</div>
+
+          <div class="final-illustration" aria-hidden="true">
+            <span class="final-balloon">HBD</span>
+            <div class="final-chars">🐰🎂🧸</div>
+          </div>
+
+          <h2 class="title-script sm final-heading">Lots of love for you <span class="rose">💗</span></h2>
+          <p class="love-note">
+            Once again, Happy Birthday <strong>AANYA SHARMA</strong>!<br/>
+            I hope you loved your surprise.
+          </p>
+
+          <button class="btn btn-ghost sm" id="restartBtn">↻ Replay</button>
+        </div>
       </div>
     </section>
 

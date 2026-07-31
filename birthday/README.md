@@ -10,7 +10,14 @@ A romantic, interactive birthday website (mobile + desktop friendly) built with 
 4. **Make a Wish** — soft “Close your eyes & make a wish” moment
 5. **Rose Bouquet** — a bouquet reveal + Continue
 6. **Sweet Moments** — a swipeable photo card deck
-7. **Final Love Note** — confetti + personal message + Play again
+7. **Scratch Card** — scratch off the foil to reveal a surprise
+8. **Spin the Wheel** — spin for a sweet promise/coupon
+9. **Puzzle Reveal** — tap tiles to piece together a hidden photo
+10. **Photo Booth** — tap the shutter, a polaroid develops
+11. **The Envelope** — tap to open a sealed letter
+12. **The Letter** — a handwritten, typed-out message
+13. **One Last Thing** — tap the gift to reveal the finale
+14. **Final Love Note** — confetti + message card + Replay
 
 ## 🖼️ What YOU need to add (optional — the site already works with placeholders)
 

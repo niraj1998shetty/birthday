@@ -1,7 +1,8 @@
 /* =========================================================
    Happy Birthday — Aanya
    Screen navigation, balloon pop, candle blow (tap + mic),
-   swipe deck for memories, floating hearts, confetti.
+   swipe deck for memories, scratch card, spin wheel, puzzle
+   reveal, photo booth, floating hearts, confetti.
    ========================================================= */
 
 (() => {
@@ -21,6 +22,21 @@
     window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
     if (name === 'final') startConfetti();
     if (name === 'letter') startLetter();
+    if (name === 'scratch') sizeScratchCanvas();
+  }
+
+  // Tries to load a real photo over a CSS gradient placeholder.
+  // If the file is missing, the gradient (and any placeholder emoji) stays put.
+  function setBgFallback(el, src) {
+    if (!el) return;
+    const test = new Image();
+    test.onload = () => {
+      el.style.backgroundImage = `url('${src}')`;
+      el.style.backgroundSize = 'cover';
+      el.style.backgroundPosition = 'center';
+      el.classList.add('has-photo');
+    };
+    test.src = src;
   }
 
   /* ---------- Screen 1: welcome ---------- */
@@ -252,11 +268,245 @@
     });
   }
 
-  memoriesContinue.addEventListener('click', () => show('envelope'));
+  memoriesContinue.addEventListener('click', () => show('scratch'));
 
   buildDeck();
 
-  /* ---------- Screen 7: envelope ---------- */
+  /* ---------- Screen 7: scratch card ---------- */
+  const scratchCanvas   = document.getElementById('scratchCanvas');
+  const scratchCtx      = scratchCanvas.getContext('2d');
+  const scratchContinue = document.getElementById('scratchContinue');
+  const scratchHint     = document.getElementById('scratchHint');
+  let scratchDone = false;
+  let scratchDrawing = false;
+  let scratchMoveCount = 0;
+
+  setBgFallback(document.querySelector('.scratch-reveal'), 'images/scratch-reveal.jpg');
+
+  function drawFoil() {
+    const w = scratchCanvas.width, h = scratchCanvas.height;
+    if (!w || !h) return;
+    scratchCtx.globalCompositeOperation = 'source-over';
+    const grad = scratchCtx.createLinearGradient(0, 0, w, h);
+    grad.addColorStop(0, '#dfe4ea');
+    grad.addColorStop(.5, '#f4f6f9');
+    grad.addColorStop(1, '#c7ccd6');
+    scratchCtx.fillStyle = grad;
+    scratchCtx.fillRect(0, 0, w, h);
+    scratchCtx.fillStyle = 'rgba(58,26,36,.75)';
+    scratchCtx.font = `600 ${Math.max(14, w * .06)}px 'Poppins', sans-serif`;
+    scratchCtx.textAlign = 'center';
+    scratchCtx.textBaseline = 'middle';
+    scratchCtx.fillText('✨ Scratch here ✨', w / 2, h / 2);
+  }
+
+  function sizeScratchCanvas() {
+    const rect = scratchCanvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    scratchCanvas.width = rect.width;
+    scratchCanvas.height = rect.height;
+    if (!scratchDone) drawFoil();
+  }
+
+  function scratchAt(x, y) {
+    scratchCtx.globalCompositeOperation = 'destination-out';
+    scratchCtx.beginPath();
+    scratchCtx.arc(x, y, 22, 0, Math.PI * 2);
+    scratchCtx.fill();
+  }
+
+  function scratchedFraction() {
+    const w = scratchCanvas.width, h = scratchCanvas.height;
+    if (!w || !h) return 0;
+    const step = 10;
+    const data = scratchCtx.getImageData(0, 0, w, h).data;
+    let cleared = 0, total = 0;
+    for (let y = 0; y < h; y += step) {
+      for (let x = 0; x < w; x += step) {
+        total++;
+        if (data[(y * w + x) * 4 + 3] < 30) cleared++;
+      }
+    }
+    return total ? cleared / total : 0;
+  }
+
+  function finishScratch() {
+    if (scratchDone) return;
+    scratchDone = true;
+    scratchCanvas.classList.add('done');
+    scratchHint.textContent = 'You found it! 🎉';
+    scratchContinue.classList.remove('hidden');
+    spawnHearts(8, scratchCanvas.getBoundingClientRect());
+  }
+
+  function scratchPointerPos(e) {
+    const rect = scratchCanvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+
+  scratchCanvas.addEventListener('pointerdown', (e) => {
+    if (scratchDone) return;
+    scratchDrawing = true;
+    const p = scratchPointerPos(e);
+    scratchAt(p.x, p.y);
+  });
+  scratchCanvas.addEventListener('pointermove', (e) => {
+    if (!scratchDrawing || scratchDone) return;
+    const p = scratchPointerPos(e);
+    scratchAt(p.x, p.y);
+    scratchMoveCount++;
+    if (scratchMoveCount % 4 === 0 && scratchedFraction() > 0.55) finishScratch();
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(evt =>
+    scratchCanvas.addEventListener(evt, () => { scratchDrawing = false; })
+  );
+  window.addEventListener('resize', () => {
+    if (byName.scratch.classList.contains('active')) sizeScratchCanvas();
+  });
+
+  scratchContinue.addEventListener('click', () => show('wheel'));
+
+  function resetScratch() {
+    scratchDone = false;
+    scratchMoveCount = 0;
+    scratchCanvas.classList.remove('done');
+    scratchContinue.classList.add('hidden');
+    scratchHint.textContent = 'Scratch the card with your finger ✨';
+  }
+
+  /* ---------- Screen 8: spin the wheel ---------- */
+  const wheelEl        = document.getElementById('wheel');
+  const wheelSpinBtn    = document.getElementById('wheelSpinBtn');
+  const wheelResult     = document.getElementById('wheelResult');
+  const wheelResultText = document.getElementById('wheelResultText');
+  const wheelPromises = [
+    { emoji: '🎬', label: 'Movie Night',      text: 'I owe you a cozy movie night, your pick 🎬' },
+    { emoji: '🍳', label: 'Breakfast in Bed', text: 'Breakfast in bed, made by me 🍳' },
+    { emoji: '💆', label: 'Spa Day',          text: 'A full spa day, just for you 💆' },
+    { emoji: '🌇', label: 'Sunset Drive',     text: 'A sunset drive to nowhere in particular 🌇' },
+    { emoji: '🎂', label: 'Bake Together',    text: 'An afternoon baking something sweet together 🎂' },
+    { emoji: '💌', label: 'Surprise Letter',  text: 'A surprise letter, whenever you least expect it 💌' },
+  ];
+  let wheelSpun = false;
+
+  function buildWheel() {
+    wheelEl.innerHTML = '';
+    const n = wheelPromises.length;
+    const step = 360 / n;
+    wheelPromises.forEach((p, i) => {
+      const angle = (i * step + step / 2) * Math.PI / 180;
+      const label = document.createElement('div');
+      label.className = 'wheel-label';
+      label.style.left = (50 + 34 * Math.sin(angle)) + '%';
+      label.style.top  = (50 - 34 * Math.cos(angle)) + '%';
+      label.innerHTML = `<span class="wheel-label-emoji">${p.emoji}</span>${p.label}`;
+      wheelEl.appendChild(label);
+    });
+  }
+  buildWheel();
+
+  wheelSpinBtn.addEventListener('click', () => {
+    if (wheelSpun) return;
+    wheelSpun = true;
+    wheelSpinBtn.disabled = true;
+    const n = wheelPromises.length;
+    const step = 360 / n;
+    const index = Math.floor(Math.random() * n);
+    const centerAngle = index * step + step / 2;
+    const rotation = 5 * 360 + (360 - centerAngle);
+    wheelEl.style.transform = `rotate(${rotation}deg)`;
+    setTimeout(() => {
+      wheelResultText.textContent = wheelPromises[index].text;
+      wheelResult.classList.remove('hidden');
+      spawnHearts(6);
+    }, 3050);
+  });
+
+  document.getElementById('wheelContinue').addEventListener('click', () => show('puzzle'));
+
+  function resetWheel() {
+    wheelSpun = false;
+    wheelSpinBtn.disabled = false;
+    wheelResult.classList.add('hidden');
+    wheelEl.style.transition = 'none';
+    wheelEl.style.transform = 'rotate(0deg)';
+    requestAnimationFrame(() => { wheelEl.style.transition = ''; });
+  }
+
+  /* ---------- Screen 9: puzzle reveal ---------- */
+  const puzzleGrid     = document.getElementById('puzzleGrid');
+  const puzzleContinue = document.getElementById('puzzleContinue');
+  const PUZZLE_COLS = 3, PUZZLE_ROWS = 2;
+  let puzzleRevealed = 0;
+
+  function buildPuzzle() {
+    puzzleGrid.innerHTML = '';
+    puzzleRevealed = 0;
+    puzzleContinue.classList.add('hidden');
+    for (let r = 0; r < PUZZLE_ROWS; r++) {
+      for (let c = 0; c < PUZZLE_COLS; c++) {
+        const tile = document.createElement('div');
+        tile.className = 'puzzle-tile';
+        tile.innerHTML = `
+          <div class="puzzle-tile-inner">
+            <div class="puzzle-front">🧩</div>
+            <div class="puzzle-back"></div>
+          </div>
+        `;
+        const back = tile.querySelector('.puzzle-back');
+        back.style.backgroundImage = "url('images/puzzle-photo.jpg'), linear-gradient(135deg, #ffd1dc, #f4a6b8)";
+        back.style.backgroundSize = `${PUZZLE_COLS * 100}% ${PUZZLE_ROWS * 100}%, cover`;
+        back.style.backgroundPosition =
+          `${(c / (PUZZLE_COLS - 1)) * 100}% ${(r / (PUZZLE_ROWS - 1)) * 100}%, center`;
+        tile.addEventListener('click', () => {
+          if (tile.classList.contains('flipped')) return;
+          tile.classList.add('flipped');
+          puzzleRevealed++;
+          if (puzzleRevealed === PUZZLE_COLS * PUZZLE_ROWS) {
+            spawnHearts(8, puzzleGrid.getBoundingClientRect());
+            puzzleContinue.classList.remove('hidden');
+          }
+        });
+        puzzleGrid.appendChild(tile);
+      }
+    }
+  }
+  buildPuzzle();
+
+  puzzleContinue.addEventListener('click', () => show('polaroid'));
+
+  /* ---------- Screen 10: photo booth ---------- */
+  const shutterBtn       = document.getElementById('shutterBtn');
+  const flashEl          = document.getElementById('flash');
+  const polaroidEl       = document.getElementById('polaroid');
+  const polaroidHint     = document.getElementById('polaroidHint');
+  const polaroidContinue = document.getElementById('polaroidContinue');
+
+  setBgFallback(polaroidEl.querySelector('.polaroid-photo'), 'images/polaroid-1.jpg');
+
+  shutterBtn.addEventListener('click', () => {
+    if (shutterBtn.disabled) return;
+    shutterBtn.disabled = true;
+    flashEl.classList.add('active');
+    spawnHearts(4, shutterBtn.getBoundingClientRect());
+    setTimeout(() => flashEl.classList.remove('active'), 500);
+    setTimeout(() => {
+      polaroidEl.classList.add('developed');
+      polaroidHint.textContent = 'Developing our memory… 💗';
+    }, 250);
+    setTimeout(() => polaroidContinue.classList.remove('hidden'), 1400);
+  });
+
+  polaroidContinue.addEventListener('click', () => show('envelope'));
+
+  function resetPolaroid() {
+    shutterBtn.disabled = false;
+    polaroidEl.classList.remove('developed');
+    polaroidHint.textContent = 'Tap the shutter 📸';
+    polaroidContinue.classList.add('hidden');
+  }
+
+  /* ---------- Screen 11: envelope ---------- */
   const envelope = document.getElementById('envelope');
   const envHint  = document.getElementById('envHint');
 
@@ -268,7 +518,7 @@
     setTimeout(() => show('letter'), 1500);
   });
 
-  /* ---------- Screen 8: handwritten letter ---------- */
+  /* ---------- Screen 12: handwritten letter ---------- */
   // Edit these lines to change the letter. Order = writing order.
   const letterLines = [
     { text: 'Dear AANYA SHARMA,', cls: 'salutation' },
@@ -362,11 +612,22 @@
   }
 
   skipBtn.addEventListener('click', finishLetter);
-  letterContinue.addEventListener('click', () => show('final'));
+  letterContinue.addEventListener('click', () => show('gift'));
 
   buildLetter();
 
-  /* ---------- Screen 9: final ---------- */
+  /* ---------- Screen 13: gift ---------- */
+  const giftBox = document.getElementById('giftBox');
+
+  giftBox.addEventListener('click', () => {
+    if (giftBox.classList.contains('opened')) return;
+    giftBox.classList.add('opened');
+    giftBox.textContent = '🎉';
+    spawnHearts(10, giftBox.getBoundingClientRect());
+    setTimeout(() => show('final'), 900);
+  });
+
+  /* ---------- Screen 14: final ---------- */
   document.getElementById('restartBtn').addEventListener('click', () => {
     popCount = 0;
     poppedEl.textContent = '0';
@@ -377,9 +638,15 @@
     }
     memoriesContinue.classList.add('hidden');
     buildDeck();
+    resetScratch();
+    resetWheel();
+    buildPuzzle();
+    resetPolaroid();
     envelope.classList.remove('open');
     envHint.textContent = 'Tap the envelope to open 💌';
     buildLetter();
+    giftBox.classList.remove('opened');
+    giftBox.textContent = '🎁';
     show('welcome');
   });
 
