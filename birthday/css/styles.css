@@ -381,11 +381,23 @@ html, body {
   justify-content: center;
   align-items: center;
 }
+.bouquet-img {
+  width: min(72vw, 330px);
+  max-height: 54dvh;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 26px rgba(230, 58, 107, .25));
+  animation: bob 3.4s ease-in-out infinite;
+}
+/* Emoji is the fallback when images/bouquet.png is missing. */
 .bouquet-emoji {
+  display: none;
   font-size: clamp(6rem, 22vw, 10rem);
   filter: drop-shadow(0 20px 26px rgba(230, 58, 107, .25));
   animation: bob 3.4s ease-in-out infinite;
 }
+.bouquet.no-img .bouquet-img { display: none; }
+.bouquet.no-img .bouquet-emoji { display: block; }
 .petals {
   position: absolute;
   inset: -20px;

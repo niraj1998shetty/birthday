@@ -152,6 +152,6 @@ public static class Cutout
 
 Add-Type -TypeDefinition $code -ReferencedAssemblies System.Drawing
 
-$result = [Cutout]::Run($src, $dst, 236, 200, 6, 1000)
+$result = [Cutout]::Run($src, $dst, 236, 200, 6, 760)
 Write-Output $result
 Write-Output ("{0:N0} KB -> {1}" -f ((Get-Item $dst).Length / 1KB), $dst)

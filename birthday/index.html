@@ -121,8 +121,11 @@
         <h2 class="title-script sm">Your Rose Bouquet <span class="rose">🌹</span></h2>
 
         <div class="bouquet">
-          <!-- Placeholder: swap with images/bouquet.png if you have one -->
-          <div class="bouquet-emoji">💐</div>
+          <!-- Generated from images/bouquet.jpg by tools/make-png.ps1 (transparent backdrop) -->
+          <img class="bouquet-img" src="images/bouquet.png"
+               alt="A bouquet of pink roses and sunflowers wrapped with a gold ribbon"
+               onerror="this.closest('.bouquet').classList.add('no-img')">
+          <div class="bouquet-emoji" aria-hidden="true">💐</div>
           <div class="petals" aria-hidden="true"></div>
         </div>
 
