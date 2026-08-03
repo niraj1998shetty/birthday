@@ -165,6 +165,11 @@
     { img: 'images/memories/3.jpeg', caption: 'That perfect evening 🌙' },
     { img: 'images/memories/4.jpeg', caption: 'Us, always 💗' },
     { img: 'images/memories/5.jpeg', caption: 'Us, always 💗' },
+    { img: 'images/memories/6.jpeg', caption: 'Beautiful moments 🌺' },
+    { img: 'images/memories/7.jpeg', caption: 'Laughing together 😄' },
+    { img: 'images/memories/8.jpeg', caption: 'Our story 📖' },
+    { img: 'images/memories/9.jpeg', caption: 'Forever memories 💌' },
+    { img: 'images/memories/10.jpeg', caption: 'All my love 💕' },
   ];
 
   const deck = document.getElementById('deck');
