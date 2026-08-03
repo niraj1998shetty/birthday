@@ -161,9 +161,10 @@
   // If image fails to load or is missing, we show a heart emoji placeholder.
   const memories = [
     { img: 'images/memories/1.jpeg', caption: 'Celebrating you 🎉' },
-    { img: 'images/memories/2.jpg', caption: 'Our little adventures 💫' },
-    { img: 'images/memories/3.jpg', caption: 'That perfect evening 🌙' },
-    { img: 'images/memories/4.jpg', caption: 'Us, always 💗' },
+    { img: 'images/memories/2.jpeg', caption: 'Our little adventures 💫' },
+    { img: 'images/memories/3.jpeg', caption: 'That perfect evening 🌙' },
+    { img: 'images/memories/4.jpeg', caption: 'Us, always 💗' },
+    { img: 'images/memories/5.jpeg', caption: 'Us, always 💗' },
   ];
 
   const deck = document.getElementById('deck');
