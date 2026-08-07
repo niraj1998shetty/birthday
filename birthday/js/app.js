@@ -44,7 +44,7 @@
   function tryPlayMusic() {
     if (!bgm || musicMuted) return;
     const activeScreen = document.querySelector('.screen.active')?.dataset.screen;
-    if (activeScreen === 'welcome') return;
+    // if (activeScreen === 'welcome') return;
     if (musicStarted) {
       bgm.play().catch(() => {});
       return;
