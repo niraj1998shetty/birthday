@@ -14,12 +14,65 @@
     screens.map(s => [s.dataset.screen, s])
   );
 
+  const musicToggle = document.getElementById('musicToggle');
+  const bgm = document.getElementById('bgm');
+  let musicMuted = true;
+  let musicStarted = false;
+
+  function updateMusicButton() {
+    if (!musicToggle) return;
+    musicToggle.innerHTML = `<span aria-hidden="true">${musicMuted ? '🔇' : '🔊'}</span>`;
+    musicToggle.setAttribute('aria-label', musicMuted ? 'Turn music on' : 'Mute music');
+  }
+
+  function pauseMusic() {
+    if (!bgm) return;
+    bgm.pause();
+    bgm.currentTime = 0;
+  }
+
+  function setMusicMuted(muted) {
+    if (!bgm) return;
+    musicMuted = muted;
+    bgm.muted = muted;
+    if (musicMuted) {
+      bgm.pause();
+    }
+    updateMusicButton();
+  }
+
+  function tryPlayMusic() {
+    if (!bgm || musicMuted) return;
+    const activeScreen = document.querySelector('.screen.active')?.dataset.screen;
+    if (activeScreen === 'welcome') return;
+    if (musicStarted) {
+      bgm.play().catch(() => {});
+      return;
+    }
+    musicStarted = true;
+    bgm.volume = 0.35;
+    bgm.currentTime = 0;
+    bgm.play().catch(() => {});
+  }
+
+  if (musicToggle) {
+    updateMusicButton();
+    musicToggle.addEventListener('click', () => {
+      const nextMuted = !musicMuted;
+      setMusicMuted(nextMuted);
+      if (!nextMuted) {
+        tryPlayMusic();
+      }
+    });
+  }
+
   function show(name) {
     screens.forEach(s => s.classList.remove('active'));
     const el = byName[name];
     if (!el) return;
     el.classList.add('active');
     window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+    if (name === 'welcome') pauseMusic();
     if (name === 'final') startConfetti();
     if (name === 'letter') startLetter();
     if (name === 'scratch') sizeScratchCanvas();
@@ -635,6 +688,7 @@
 
   /* ---------- Screen 14: final ---------- */
   document.getElementById('restartBtn').addEventListener('click', () => {
+    musicStarted = false;
     popCount = 0;
     poppedEl.textContent = '0';
     balloons.forEach(b => b.classList.remove('popped'));
@@ -691,14 +745,6 @@
       s.style.transform = `rotate(${Math.random() * 360}deg)`;
       container.appendChild(s);
     }
-  }
-
-  /* ---------- Optional background music ---------- */
-  function tryPlayMusic() {
-    const audio = document.getElementById('bgm');
-    if (!audio) return;
-    audio.volume = 0.35;
-    audio.play().catch(() => { /* file missing or blocked — silent */ });
   }
 
 })();
