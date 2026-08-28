@@ -14,15 +14,17 @@
     screens.map(s => [s.dataset.screen, s])
   );
 
-  const musicToggle = document.getElementById('musicToggle');
+  const musicToggle     = document.getElementById('musicToggle');
+  const musicToggleIcon = musicToggle?.querySelector('.music-toggle-icon');
   const bgm = document.getElementById('bgm');
   let musicMuted = true;
   let musicStarted = false;
 
   function updateMusicButton() {
     if (!musicToggle) return;
-    musicToggle.innerHTML = `<span aria-hidden="true">${musicMuted ? '🔇' : '🔊'}</span>`;
+    if (musicToggleIcon) musicToggleIcon.textContent = musicMuted ? '🔇' : '🔊';
     musicToggle.setAttribute('aria-label', musicMuted ? 'Turn music on' : 'Mute music');
+    musicToggle.classList.toggle('playing', !musicMuted && musicStarted);
   }
 
   function pauseMusic() {
@@ -42,17 +44,21 @@
   }
 
   function tryPlayMusic() {
-    if (!bgm || musicMuted) return;
-    const activeScreen = document.querySelector('.screen.active')?.dataset.screen;
-    // if (activeScreen === 'welcome') return;
+    if (!bgm || musicMuted || !bgm.src) return;
     if (musicStarted) {
       bgm.play().catch(() => {});
+      updateMusicButton();
       return;
     }
     musicStarted = true;
     bgm.volume = 0.35;
     bgm.currentTime = 0;
     bgm.play().catch(() => {});
+    updateMusicButton();
+  }
+
+  function revealMusicToggle() {
+    musicToggle?.classList.remove('hidden');
   }
 
   if (musicToggle) {
@@ -76,7 +82,62 @@
     if (name === 'final') startConfetti();
     if (name === 'letter') startLetter();
     if (name === 'scratch') sizeScratchCanvas();
+    syncDevNav();
   }
+
+  /* ---------- Dev screen skipper ----------------------------------------
+     Testing aid only: jump straight to any screen without playing through.
+     Add ?dev=0 to the URL (or delete this block) before sharing the page.
+     Press "d" to hide/show the bar. */
+  const DEV_NAV = new URLSearchParams(location.search).get('dev') !== '0';
+  let devSelect = null;
+
+  function syncDevNav() {
+    if (!devSelect) return;
+    const active = screens.find(s => s.classList.contains('active'));
+    if (active) devSelect.value = active.dataset.screen;
+  }
+
+  function buildDevNav() {
+    const bar = document.createElement('div');
+    bar.className = 'dev-nav';
+    bar.innerHTML = `
+      <button type="button" class="dev-btn" data-dev="prev" title="Previous screen">‹</button>
+      <select class="dev-select" aria-label="Jump to screen"></select>
+      <button type="button" class="dev-btn" data-dev="next" title="Next screen">Skip ›</button>
+      <button type="button" class="dev-btn dev-close" data-dev="hide" title="Hide (press d)">✕</button>
+    `;
+
+    devSelect = bar.querySelector('.dev-select');
+    screens.forEach((s, i) => {
+      const opt = document.createElement('option');
+      opt.value = s.dataset.screen;
+      opt.textContent = `${i + 1}. ${s.dataset.screen}`;
+      devSelect.appendChild(opt);
+    });
+    devSelect.addEventListener('change', () => show(devSelect.value));
+
+    bar.addEventListener('click', e => {
+      const action = e.target.closest('[data-dev]')?.dataset.dev;
+      if (!action) return;
+      if (action === 'hide') { bar.classList.add('hidden'); return; }
+      const i = screens.findIndex(s => s.classList.contains('active'));
+      const target = screens[action === 'next' ? i + 1 : i - 1];
+      if (target) show(target.dataset.screen);
+    });
+
+    document.addEventListener('keydown', e => {
+      const tag = document.activeElement?.tagName;
+      if (e.key === 'd' && !/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) {
+        bar.classList.toggle('hidden');
+      }
+    });
+
+    document.body.appendChild(bar);
+    syncDevNav();
+  }
+
+  if (DEV_NAV) buildDevNav();
 
   // Tries to load a real photo over a CSS gradient placeholder.
   // If the file is missing, the gradient (and any placeholder emoji) stays put.
@@ -97,8 +158,7 @@
   const noBtn  = document.getElementById('noBtn');
 
   yesBtn.addEventListener('click', () => {
-    tryPlayMusic();
-    show('balloons');
+    show('songs');
   });
 
   // Playful runaway "No" button
@@ -118,10 +178,66 @@
   noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); runAway(); }, { passive: false });
   noBtn.addEventListener('click', runAway);
 
+  /* ---------- Screen 1.5: pick a song ---------- */
+  // Drop matching photos in images/songs/1.jpg .. 5.jpg and audio in audio/song1.mp3 .. song5.mp3.
+  // Song names are set directly in index.html's .song-name spans.
+  const songOptions = Array.from(document.querySelectorAll('.song-option'));
+  const songsContinue = document.getElementById('songsContinue');
+
+  songOptions.forEach(opt => {
+    const num = opt.dataset.song;
+    setBgFallback(opt.querySelector('.song-photo'), `images/songs/${num}.jpg`);
+
+    opt.addEventListener('click', () => {
+      songOptions.forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+
+      const src = opt.dataset.src;
+      if (bgm && src) {
+        bgm.src = src;
+        bgm.load();
+      }
+      revealMusicToggle();
+      setMusicMuted(false);
+      tryPlayMusic();
+
+      songsContinue.classList.remove('hidden');
+    });
+  });
+
+  songsContinue.addEventListener('click', () => show('balloons'));
+
+  function resetSongPick() {
+    songOptions.forEach(o => o.classList.remove('selected'));
+    songsContinue.classList.add('hidden');
+  }
+
   /* ---------- Screen 2: balloons ---------- */
   const balloons = document.querySelectorAll('.balloon');
   const poppedEl = document.getElementById('popped');
+  const balloonsContinue = document.getElementById('balloonsContinue');
+  const balloonColors = { pink: '#ff8fb1', green: '#7fd1a3', purple: '#a993e4', yellow: '#ffcf6b' };
   let popCount = 0;
+
+  function popBurst(rect, color) {
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const hex = balloonColors[color] || '#ff8fb1';
+    const count = 14;
+    for (let i = 0; i < count; i++) {
+      const shard = document.createElement('span');
+      shard.className = 'pop-shard';
+      const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+      const dist = 60 + Math.random() * 50;
+      shard.style.left = cx + 'px';
+      shard.style.top = cy + 'px';
+      shard.style.background = hex;
+      shard.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+      shard.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+      document.body.appendChild(shard);
+      setTimeout(() => shard.remove(), 650);
+    }
+  }
 
   balloons.forEach(b => {
     const onPop = () => {
@@ -129,13 +245,24 @@
       b.classList.add('popped');
       popCount++;
       poppedEl.textContent = String(popCount);
-      spawnHearts(6, b.getBoundingClientRect());
+      const rect = b.getBoundingClientRect();
+      popBurst(rect, b.dataset.color);
+      spawnHearts(4, rect);
       if (popCount === balloons.length) {
-        setTimeout(() => show('candle'), 900);
+        setTimeout(() => balloonsContinue.classList.remove('hidden'), 500);
       }
     };
     b.addEventListener('click', onPop);
   });
+
+  balloonsContinue.addEventListener('click', () => show('candle'));
+
+  function resetBalloons() {
+    popCount = 0;
+    poppedEl.textContent = '0';
+    balloons.forEach(b => b.classList.remove('popped'));
+    balloonsContinue.classList.add('hidden');
+  }
 
   /* ---------- Screen 3: candle (tap OR blow) ---------- */
   const blowBtn = document.getElementById('blowBtn');
@@ -227,8 +354,46 @@
 
   const deck = document.getElementById('deck');
   const memoriesContinue = document.getElementById('memoriesContinue');
+  const memoriesSubtitle = document.getElementById('memoriesSubtitle');
+  const filmstrip = document.getElementById('filmstrip');
+  const filmTrack = document.getElementById('filmTrack');
+
+  // Every photo, looping forever as a film reel once the deck is empty.
+  function showFilmstrip() {
+    filmTrack.innerHTML = '';
+    // Two identical passes: the -50% keyframe lands exactly on the second copy.
+    for (let pass = 0; pass < 2; pass++) {
+      memories.forEach(m => {
+        const frame = document.createElement('div');
+        frame.className = 'film-frame';
+        frame.innerHTML = `<div class="film-photo"><span class="ph">💖</span></div>`;
+        const photo = frame.querySelector('.film-photo');
+        const test = new Image();
+        test.onload = () => {
+          photo.style.backgroundImage = `url('${m.img}')`;
+          photo.querySelector('.ph')?.remove();
+        };
+        test.src = m.img;
+        filmTrack.appendChild(frame);
+      });
+    }
+    // One steady speed regardless of how many photos are in the array.
+    filmTrack.style.animationDuration = `${memories.length * 3}s`;
+
+    deck.classList.add('hidden');
+    filmstrip.classList.remove('hidden');
+    memoriesSubtitle.textContent = 'All of them, on repeat 🎞️';
+  }
+
+  function hideFilmstrip() {
+    filmstrip.classList.add('hidden');
+    filmTrack.innerHTML = '';
+    deck.classList.remove('hidden');
+    memoriesSubtitle.textContent = '(Swipe / drag the cards)';
+  }
 
   function buildDeck() {
+    hideFilmstrip();
     deck.innerHTML = '';
     // Append from bottom-most memory to top-most so the visually top card is
     // both the last DOM child AND has the highest z-index.
@@ -297,6 +462,7 @@
           card.remove();
           restack();
           if (!deck.querySelector('.card')) {
+            showFilmstrip();
             memoriesContinue.classList.remove('hidden');
           }
         }, 300);
@@ -492,45 +658,309 @@
     requestAnimationFrame(() => { wheelEl.style.transition = ''; });
   }
 
-  /* ---------- Screen 9: puzzle reveal ---------- */
+  /* ---------- Screen 9: rearrange-the-photo jigsaw ---------- */
   const puzzleGrid     = document.getElementById('puzzleGrid');
+  const puzzleTitle    = document.getElementById('puzzleTitle');
+  const puzzleHint     = document.getElementById('puzzleHint');
+  const puzzleMoves    = document.getElementById('puzzleMoves');
+  const puzzlePeek     = document.getElementById('puzzlePeek');
+  const puzzleReveal   = document.getElementById('puzzleReveal');
   const puzzleContinue = document.getElementById('puzzleContinue');
-  const PUZZLE_COLS = 3, PUZZLE_ROWS = 2;
-  let puzzleRevealed = 0;
+  const PUZZLE_COLS = 3, PUZZLE_ROWS = 3;
+  const PUZZLE_SIZE = PUZZLE_COLS * PUZZLE_ROWS;
+  const PUZZLE_PHOTO = 'images/puzzle-photo.jpg';
+  const PUZZLE_HINT_START  = 'Tap two pieces to swap · green dot = right spot 🧩';
+  const PUZZLE_TITLE_START = 'Piece It Together';
+
+  // order[slot] = which piece of the photo currently sits in that slot.
+  let puzzleOrder    = [];
+  let puzzleTiles    = [];
+  let puzzleSelected = -1;
+  let puzzleMoveCount = 0;
+  let puzzleSolved   = false;
+  let puzzleRevealing = false;
+  let puzzlePeekTimer = null;
+  let puzzleRevealTimer = null;
+  let puzzleZoomTimer = null;
+  let puzzleZoomLayer = null;
+  // puzzleLookAlike[piece] = id shared by every piece that renders identically.
+  // This photo has blank white corners, so two of them are indistinguishable —
+  // without this, the picture can look finished while the order is still "wrong".
+  let puzzleLookAlike = null;
+
+  // A piece is home if it is the right one, or one no eye could tell apart from it.
+  function pieceIsHome(piece, slot) {
+    if (piece === slot) return true;
+    return !!puzzleLookAlike && puzzleLookAlike[piece] === puzzleLookAlike[slot];
+  }
+
+  function puzzleIsComplete() {
+    return puzzleOrder.every(pieceIsHome);
+  }
+
+  // Samples the photo on a canvas and groups cells whose pixels are ~identical.
+  // Falls back to strict position matching if the canvas is unreadable (file://).
+  function findLookAlikePieces() {
+    const img = new Image();
+    img.onload = () => {
+      const S = 8;   // each piece reduced to an SxS thumbnail before comparing
+      try {
+        const cv = document.createElement('canvas');
+        cv.width  = PUZZLE_COLS * S;
+        cv.height = PUZZLE_ROWS * S;
+        const ctx = cv.getContext('2d');
+        ctx.drawImage(img, 0, 0, cv.width, cv.height);
+        const data = ctx.getImageData(0, 0, cv.width, cv.height).data;
+
+        const sigs = [];
+        for (let p = 0; p < PUZZLE_SIZE; p++) {
+          const ox = (p % PUZZLE_COLS) * S;
+          const oy = Math.floor(p / PUZZLE_COLS) * S;
+          const sig = [];
+          for (let y = 0; y < S; y++) {
+            for (let x = 0; x < S; x++) {
+              const i = ((oy + y) * cv.width + ox + x) * 4;
+              sig.push(data[i], data[i + 1], data[i + 2]);
+            }
+          }
+          sigs.push(sig);
+        }
+
+        const groups = sigs.map((_, i) => i);
+        for (let a = 0; a < PUZZLE_SIZE; a++) {
+          for (let b = a + 1; b < PUZZLE_SIZE; b++) {
+            if (groups[b] !== b) continue;          // already folded into a group
+            let diff = 0;
+            for (let k = 0; k < sigs[a].length; k++) diff += Math.abs(sigs[a][k] - sigs[b][k]);
+            if (diff / sigs[a].length <= 6) groups[b] = groups[a];
+          }
+        }
+        puzzleLookAlike = groups;
+      } catch {
+        puzzleLookAlike = null;
+      }
+      if (!puzzleSolved) {
+        renderPuzzle();
+        if (puzzleIsComplete()) onPuzzleSolved();   // she may have finished already
+      }
+    };
+    img.src = PUZZLE_PHOTO;
+  }
+  findLookAlikePieces();
+
+  // Each piece is the same photo, zoomed COLSx / ROWSx and offset to its own cell.
+  function paintPiece(tile, piece) {
+    const c = piece % PUZZLE_COLS;
+    const r = Math.floor(piece / PUZZLE_COLS);
+    tile.style.backgroundImage = `url('${PUZZLE_PHOTO}'), linear-gradient(135deg, #ffd1dc, #f4a6b8)`;
+    tile.style.backgroundSize = `${PUZZLE_COLS * 100}% ${PUZZLE_ROWS * 100}%, cover`;
+    tile.style.backgroundPosition =
+      `${(c / (PUZZLE_COLS - 1)) * 100}% ${(r / (PUZZLE_ROWS - 1)) * 100}%, center`;
+  }
+
+  function renderPuzzle() {
+    puzzleOrder.forEach((piece, slot) => {
+      const tile = puzzleTiles[slot];
+      paintPiece(tile, piece);
+      tile.classList.toggle('correct', pieceIsHome(piece, slot));
+      tile.classList.toggle('selected', slot === puzzleSelected);
+      tile.setAttribute('aria-label', `Piece ${piece + 1} in position ${slot + 1}`);
+    });
+    puzzleMoves.textContent = puzzleMoveCount === 1 ? '1 move' : `${puzzleMoveCount} moves`;
+  }
+
+  function shufflePuzzleOrder() {
+    let attempts = 0;
+    do {
+      for (let i = puzzleOrder.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [puzzleOrder[i], puzzleOrder[j]] = [puzzleOrder[j], puzzleOrder[i]];
+      }
+    } while (puzzleIsComplete() && ++attempts < 20);
+  }
+
+  // Flies the finished photo out of the grid to fill the screen, holds, flies back.
+  function zoomSolvedPhoto() {
+    const start = puzzleGrid.getBoundingClientRect();
+    const layer = document.createElement('div');
+    layer.className = 'puzzle-zoom-layer';
+    layer.innerHTML = `
+      <div class="puzzle-zoom-photo"></div>
+      <p class="puzzle-zoom-caption">Our memory, back in one piece 💖<small>tap to close</small></p>
+    `;
+    const photo = layer.querySelector('.puzzle-zoom-photo');
+    photo.style.backgroundImage = `url('${PUZZLE_PHOTO}'), linear-gradient(135deg, #ffd1dc, #f4a6b8)`;
+    setRect(photo, start);
+    document.body.appendChild(layer);
+    puzzleZoomLayer = layer;
+    void photo.offsetWidth;   // settle the start rect so the flight animates
+
+    const side = Math.min(window.innerWidth * 0.92, window.innerHeight * 0.64);
+    requestAnimationFrame(() => {
+      layer.classList.add('open');
+      setRect(photo, {
+        left: (window.innerWidth - side) / 2,
+        top: (window.innerHeight - side) / 2 - window.innerHeight * 0.05,
+        width: side,
+        height: side,
+      });
+    });
+
+    let closing = false;
+    const close = () => {
+      if (closing) return;
+      closing = true;
+      clearTimeout(puzzleZoomTimer);
+      layer.classList.remove('open');
+      setRect(photo, puzzleGrid.getBoundingClientRect());  // re-measure in case of scroll/resize
+      setTimeout(() => {
+        layer.remove();
+        if (puzzleZoomLayer === layer) puzzleZoomLayer = null;
+        if (puzzleSolved) puzzleContinue.classList.remove('hidden');
+      }, 680);
+    };
+
+    layer.addEventListener('click', close);
+    puzzleZoomTimer = setTimeout(close, 3400);
+  }
+
+  function setRect(el, r) {
+    el.style.left   = r.left + 'px';
+    el.style.top    = r.top + 'px';
+    el.style.width  = r.width + 'px';
+    el.style.height = r.height + 'px';
+  }
+
+  function onPuzzleSolved(revealed = false) {
+    puzzleSolved = true;
+    puzzleSelected = -1;
+    puzzleGrid.classList.remove('peeking');
+    puzzleGrid.classList.add('solved');
+    puzzleTitle.textContent = revealed ? 'Here It Is 💗' : 'You Did It! 🎉';
+    puzzleHint.textContent = revealed
+      ? 'Our memory, back in one piece'
+      : `Pieced together in ${puzzleMoveCount} moves 💖`;
+    puzzlePeek.classList.add('hidden');
+    puzzleReveal.classList.add('hidden');
+
+    burstConfetti(75);
+    spawnHearts(14, puzzleGrid.getBoundingClientRect());
+
+    // Wait for the gaps to collapse into one photo before flying it out.
+    puzzleZoomTimer = setTimeout(zoomSolvedPhoto, 560);
+  }
+
+  // "I give up": walk the pieces home one swap at a time so she still sees it
+  // come together, then run the same celebration.
+  function revealPuzzle() {
+    if (puzzleSolved || puzzleRevealing) return;
+    puzzleRevealing = true;
+    puzzleSelected = -1;
+    puzzlePeek.classList.add('hidden');
+    puzzleReveal.classList.add('hidden');
+    puzzleHint.textContent = 'Letting the pieces find their way home 💗';
+    renderPuzzle();
+
+    let slot = 0;
+    const stepHome = () => {
+      while (slot < PUZZLE_SIZE && puzzleOrder[slot] === slot) slot++;
+      if (slot >= PUZZLE_SIZE) {
+        puzzleRevealing = false;
+        onPuzzleSolved(true);
+        return;
+      }
+      const from = puzzleOrder.indexOf(slot);   // always ahead: earlier slots are settled
+      [puzzleOrder[from], puzzleOrder[slot]] = [puzzleOrder[slot], puzzleOrder[from]];
+      renderPuzzle();
+      popTiles(from, slot);
+      puzzleRevealTimer = setTimeout(stepHome, 260);
+    };
+    puzzleRevealTimer = setTimeout(stepHome, 320);
+  }
+
+  function popTiles(...slots) {
+    slots.forEach(i => {
+      const tile = puzzleTiles[i];
+      tile.classList.remove('swapping');
+      void tile.offsetWidth;         // restart the pop animation
+      tile.classList.add('swapping');
+    });
+  }
+
+  function tapPuzzleSlot(slot) {
+    if (puzzleSolved || puzzleRevealing) return;
+
+    if (puzzleSelected === -1) {
+      puzzleSelected = slot;
+      renderPuzzle();
+      return;
+    }
+    if (puzzleSelected === slot) {   // tap the same piece again to deselect
+      puzzleSelected = -1;
+      renderPuzzle();
+      return;
+    }
+
+    const from = puzzleSelected;
+    [puzzleOrder[from], puzzleOrder[slot]] = [puzzleOrder[slot], puzzleOrder[from]];
+    puzzleSelected = -1;
+    puzzleMoveCount++;
+    renderPuzzle();
+
+    popTiles(from, slot);
+
+    if (puzzleIsComplete()) onPuzzleSolved();
+  }
 
   function buildPuzzle() {
+    clearTimeout(puzzlePeekTimer);
+    clearTimeout(puzzleRevealTimer);
+    clearTimeout(puzzleZoomTimer);
+    puzzleZoomLayer?.remove();
+    puzzleZoomLayer = null;
     puzzleGrid.innerHTML = '';
-    puzzleRevealed = 0;
+    puzzleGrid.classList.remove('solved', 'peeking');
+    puzzleTiles = [];
+    puzzleSelected = -1;
+    puzzleMoveCount = 0;
+    puzzleSolved = false;
+    puzzleRevealing = false;
+    puzzleTitle.textContent = PUZZLE_TITLE_START;
+    puzzleHint.textContent = PUZZLE_HINT_START;
+    puzzlePeek.classList.remove('hidden');
+    puzzleReveal.classList.remove('hidden');
     puzzleContinue.classList.add('hidden');
-    for (let r = 0; r < PUZZLE_ROWS; r++) {
-      for (let c = 0; c < PUZZLE_COLS; c++) {
-        const tile = document.createElement('div');
-        tile.className = 'puzzle-tile';
-        tile.innerHTML = `
-          <div class="puzzle-tile-inner">
-            <div class="puzzle-front">🧩</div>
-            <div class="puzzle-back"></div>
-          </div>
-        `;
-        const back = tile.querySelector('.puzzle-back');
-        back.style.backgroundImage = "url('images/puzzle-photo.jpg'), linear-gradient(135deg, #ffd1dc, #f4a6b8)";
-        back.style.backgroundSize = `${PUZZLE_COLS * 100}% ${PUZZLE_ROWS * 100}%, cover`;
-        back.style.backgroundPosition =
-          `${(c / (PUZZLE_COLS - 1)) * 100}% ${(r / (PUZZLE_ROWS - 1)) * 100}%, center`;
-        tile.addEventListener('click', () => {
-          if (tile.classList.contains('flipped')) return;
-          tile.classList.add('flipped');
-          puzzleRevealed++;
-          if (puzzleRevealed === PUZZLE_COLS * PUZZLE_ROWS) {
-            spawnHearts(8, puzzleGrid.getBoundingClientRect());
-            puzzleContinue.classList.remove('hidden');
-          }
-        });
-        puzzleGrid.appendChild(tile);
-      }
+
+    puzzleOrder = Array.from({ length: PUZZLE_SIZE }, (_, i) => i);
+    shufflePuzzleOrder();
+
+    for (let slot = 0; slot < PUZZLE_SIZE; slot++) {
+      const tile = document.createElement('button');
+      tile.type = 'button';
+      tile.className = 'puzzle-tile';
+      tile.addEventListener('click', () => tapPuzzleSlot(slot));
+      puzzleTiles.push(tile);
+      puzzleGrid.appendChild(tile);
     }
+
+    const peek = document.createElement('div');
+    peek.className = 'puzzle-peek';
+    peek.setAttribute('aria-hidden', 'true');
+    peek.style.backgroundImage = `url('${PUZZLE_PHOTO}'), linear-gradient(135deg, #ffd1dc, #f4a6b8)`;
+    puzzleGrid.appendChild(peek);
+
+    renderPuzzle();
   }
   buildPuzzle();
+
+  puzzleReveal.addEventListener('click', revealPuzzle);
+
+  puzzlePeek.addEventListener('click', () => {
+    if (puzzleSolved) return;
+    clearTimeout(puzzlePeekTimer);
+    puzzleGrid.classList.add('peeking');
+    puzzlePeekTimer = setTimeout(() => puzzleGrid.classList.remove('peeking'), 1200);
+  });
 
   puzzleContinue.addEventListener('click', () => show('polaroid'));
 
@@ -689,9 +1119,14 @@
   /* ---------- Screen 14: final ---------- */
   document.getElementById('restartBtn').addEventListener('click', () => {
     musicStarted = false;
-    popCount = 0;
-    poppedEl.textContent = '0';
-    balloons.forEach(b => b.classList.remove('popped'));
+    musicMuted = true;
+    pauseMusic();
+    if (bgm) bgm.removeAttribute('src');
+    musicToggle?.classList.add('hidden');
+    musicToggle?.classList.remove('playing');
+    updateMusicButton();
+    resetSongPick();
+    resetBalloons();
     if (flame) {
       flame.style.opacity = '';
       flame.style.transform = '';
@@ -728,6 +1163,30 @@
   }
   setInterval(() => spawnHearts(1), 2200);
 
+  /* ---------- Confetti ---------- */
+  const CONFETTI_COLORS = ['#e63a6b', '#ff8fb1', '#ffcf6b', '#a993e4', '#7fd1a3'];
+
+  // One-shot burst on its own fixed layer, cleaned up once the last piece lands.
+  function burstConfetti(count = 70) {
+    const layer = document.createElement('div');
+    layer.className = 'burst-layer';
+    layer.setAttribute('aria-hidden', 'true');
+    let longest = 0;
+    for (let i = 0; i < count; i++) {
+      const s = document.createElement('span');
+      const dur = 2.4 + Math.random() * 1.8;
+      const delay = Math.random() * 0.8;
+      s.style.left = Math.random() * 100 + '%';
+      s.style.background = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+      s.style.animationDuration = dur + 's';
+      s.style.animationDelay = delay + 's';
+      longest = Math.max(longest, dur + delay);
+      layer.appendChild(s);
+    }
+    document.body.appendChild(layer);
+    setTimeout(() => layer.remove(), (longest + 0.4) * 1000);
+  }
+
   /* ---------- Confetti (final screen) ---------- */
   let confettiStarted = false;
   function startConfetti() {
@@ -735,11 +1194,10 @@
     confettiStarted = true;
     const container = document.querySelector('#app section[data-screen="final"] .confetti');
     if (!container) return;
-    const colors = ['#e63a6b', '#ff8fb1', '#ffcf6b', '#a993e4', '#7fd1a3'];
     for (let i = 0; i < 80; i++) {
       const s = document.createElement('span');
       s.style.left = Math.random() * 100 + '%';
-      s.style.background = colors[Math.floor(Math.random() * colors.length)];
+      s.style.background = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
       s.style.animationDuration = (3 + Math.random() * 3) + 's';
       s.style.animationDelay = (Math.random() * 2) + 's';
       s.style.transform = `rotate(${Math.random() * 360}deg)`;

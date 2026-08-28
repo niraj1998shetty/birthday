@@ -8,13 +8,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Dancing+Script:wght@600;700&family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/styles.css?v=9" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎂%3C/text%3E%3C/svg%3E" />
 </head>
 <body>
 
-  <button class="music-toggle" id="musicToggle" type="button" aria-label="Turn music on">
-    <span aria-hidden="true">🔇</span>
+  <button class="music-toggle hidden" id="musicToggle" type="button" aria-label="Turn music on">
+    <span class="music-toggle-ring" aria-hidden="true"></span>
+    <span class="music-toggle-icon" aria-hidden="true">🔇</span>
+    <span class="music-toggle-eq" aria-hidden="true"><span></span><span></span><span></span></span>
   </button>
 
   <!-- Ambient floating hearts (background layer) -->
@@ -52,20 +54,85 @@
       </div>
     </section>
 
+    <!-- ============ SCREEN 1.5: PICK A SONG ============ -->
+    <section class="screen" data-screen="songs">
+      <div class="stack">
+        <h2 class="title-script sm">Pick Our Song <span class="rose">🎵</span></h2>
+        <p class="subtle">Choose the song you want to listen to</p>
+
+        <!-- Photos/audio added later: drop images in images/songs/ and files in audio/ -->
+        <div class="song-list" id="songGrid">
+          <button class="song-option" data-song="1" data-src="audio/song1.mp3">
+            <span class="song-photo"><span class="song-photo-emoji">🎵</span></span>
+            <span class="song-name">Song One</span>
+            <span class="song-eq" aria-hidden="true"><span></span><span></span><span></span></span>
+          </button>
+          <button class="song-option" data-song="2" data-src="audio/song2.mp3">
+            <span class="song-photo"><span class="song-photo-emoji">🎵</span></span>
+            <span class="song-name">Song Two</span>
+            <span class="song-eq" aria-hidden="true"><span></span><span></span><span></span></span>
+          </button>
+          <button class="song-option" data-song="3" data-src="audio/song3.mp3">
+            <span class="song-photo"><span class="song-photo-emoji">🎵</span></span>
+            <span class="song-name">Song Three</span>
+            <span class="song-eq" aria-hidden="true"><span></span><span></span><span></span></span>
+          </button>
+          <button class="song-option" data-song="4" data-src="audio/song4.mp3">
+            <span class="song-photo"><span class="song-photo-emoji">🎵</span></span>
+            <span class="song-name">Song Four</span>
+            <span class="song-eq" aria-hidden="true"><span></span><span></span><span></span></span>
+          </button>
+          <button class="song-option" data-song="5" data-src="audio/song5.mp3">
+            <span class="song-photo"><span class="song-photo-emoji">🎵</span></span>
+            <span class="song-name">Song Five</span>
+            <span class="song-eq" aria-hidden="true"><span></span><span></span><span></span></span>
+          </button>
+        </div>
+
+        <button class="btn btn-primary sm hidden" id="songsContinue">Next →</button>
+      </div>
+    </section>
+
     <!-- ============ SCREEN 2: BALLOON POP ============ -->
     <section class="screen" data-screen="balloons">
       <div class="stack">
         <h2 class="title-pink">Pop all 4 balloons</h2>
         <p class="subtle">Tap each one 💕</p>
 
+        <!-- Drop a transparent balloon photo at images/balloon.png to use it here; falls back to 🎈 if missing -->
         <div class="balloon-field" id="balloonField">
-          <button class="balloon" data-color="pink"   style="--x:20%; --y:15%; --d:0s;">🎈</button>
-          <button class="balloon" data-color="green"  style="--x:70%; --y:25%; --d:.4s;">🎈</button>
-          <button class="balloon" data-color="purple" style="--x:35%; --y:55%; --d:.8s;">🎈</button>
-          <button class="balloon" data-color="yellow" style="--x:75%; --y:65%; --d:1.2s;">🎈</button>
+          <button class="balloon" data-color="pink" data-word="YOU" style="--x:20%; --y:15%; --d:0s;">
+            <span class="balloon-shape">
+              <img class="balloon-img" src="images/balloon.png" alt="" onerror="this.closest('.balloon').classList.add('no-img')">
+              <span class="balloon-emoji" aria-hidden="true">🎈</span>
+            </span>
+            <span class="balloon-word" aria-hidden="true">YOU</span>
+          </button>
+          <button class="balloon" data-color="green" data-word="ARE" style="--x:70%; --y:25%; --d:.4s;">
+            <span class="balloon-shape">
+              <img class="balloon-img" src="images/balloon.png" alt="" onerror="this.closest('.balloon').classList.add('no-img')">
+              <span class="balloon-emoji" aria-hidden="true">🎈</span>
+            </span>
+            <span class="balloon-word" aria-hidden="true">ARE</span>
+          </button>
+          <button class="balloon" data-color="purple" data-word="SO" style="--x:35%; --y:55%; --d:.8s;">
+            <span class="balloon-shape">
+              <img class="balloon-img" src="images/balloon.png" alt="" onerror="this.closest('.balloon').classList.add('no-img')">
+              <span class="balloon-emoji" aria-hidden="true">🎈</span>
+            </span>
+            <span class="balloon-word" aria-hidden="true">SO</span>
+          </button>
+          <button class="balloon" data-color="yellow" data-word="BEAUTIFUL" style="--x:75%; --y:74%; --d:1.2s;">
+            <span class="balloon-shape">
+              <img class="balloon-img" src="images/balloon.png" alt="" onerror="this.closest('.balloon').classList.add('no-img')">
+              <span class="balloon-emoji" aria-hidden="true">🎈</span>
+            </span>
+            <span class="balloon-word" aria-hidden="true">BEAUTIFUL</span>
+          </button>
         </div>
 
         <p class="counter"><span id="popped">0</span> / 4 popped</p>
+        <button class="btn btn-primary sm hidden" id="balloonsContinue">Next →</button>
       </div>
     </section>
 
@@ -93,9 +160,9 @@
     </section>
 
     <!-- ============ SCREEN 4: MAKE A WISH ============ -->
-    <section class="screen" data-screen="wish">
+    <section class="screen wish-dark" data-screen="wish">
       <div class="stack">
-        <h2 class="title-dark">Blow the candle, <span class="pink">VINIMAA</span></h2>
+        <h2 class="title-script sm wish-heading">Make a Wish <span class="pink">✨</span></h2>
 
         <div class="cake-wrap dim">
           <div class="cake-big">
@@ -104,16 +171,12 @@
               <span class="smoke s2"></span>
             </div>
             <div class="frosting"></div>
-            <div class="cake-body">
-              <div class="wish-text">
-                <div>Close your</div>
-                <div class="big">eyes</div>
-                <div>&amp; make a wish</div>
-              </div>
-            </div>
+            <div class="cake-body"></div>
             <div class="plate"></div>
           </div>
         </div>
+
+        <p class="wish-caption">Close your eyes<br/><span class="big">&amp; make a wish</span></p>
 
         <button class="btn btn-primary sm" id="wishDoneBtn">Wish made ✨</button>
       </div>
@@ -141,10 +204,15 @@
     <section class="screen" data-screen="memories">
       <div class="stack">
         <h2 class="title-pink big">Some Sweet Moments</h2>
-        <p class="subtle">(Swipe / drag the cards)</p>
+        <p class="subtle" id="memoriesSubtitle">(Swipe / drag the cards)</p>
 
         <div class="deck" id="deck">
           <!-- Cards are injected by JS; drop your photos in images/memories/ -->
+        </div>
+
+        <!-- Rolls in once every card has been swiped away -->
+        <div class="filmstrip hidden" id="filmstrip" aria-hidden="true">
+          <div class="film-track" id="filmTrack"></div>
         </div>
 
         <button class="btn btn-primary sm hidden" id="memoriesContinue">Continue →</button>
@@ -194,11 +262,17 @@
     <!-- ============ SCREEN 9: PUZZLE REVEAL ============ -->
     <section class="screen" data-screen="puzzle">
       <div class="stack">
-        <h2 class="title-script sm">Piece It Together</h2>
-        <p class="tiny">Tap each tile to reveal our memory 🧩</p>
+        <h2 class="title-script sm" id="puzzleTitle">Piece It Together</h2>
+        <p class="tiny" id="puzzleHint">Tap two pieces to swap them 🧩</p>
 
         <!-- Placeholder: swap with images/puzzle-photo.jpg to change the hidden photo -->
         <div class="puzzle-grid" id="puzzleGrid"></div>
+
+        <div class="puzzle-bar">
+          <span class="puzzle-moves" id="puzzleMoves">0 moves</span>
+          <button class="btn btn-ghost xs" id="puzzlePeek">👀 Peek</button>
+          <button class="btn btn-ghost xs" id="puzzleReveal">🙈 I give up</button>
+        </div>
 
         <button class="btn btn-primary sm hidden" id="puzzleContinue">Continue →</button>
       </div>
@@ -298,11 +372,9 @@
 
   </main>
 
-  <!-- Audio (optional). Drop a file at audio/song.mp3 to enable background music. -->
-  <audio id="bgm" loop preload="none">
-    <source src="audio/song.mp3" type="audio/mpeg" />
-  </audio>
+  <!-- Audio: source is set by JS once a song is picked on the "Pick Our Song" screen. -->
+  <audio id="bgm" loop preload="none"></audio>
 
-  <script src="js/app.js?v=4"></script>
+  <script src="js/app.js?v=9"></script>
 </body>
 </html>
