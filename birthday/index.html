@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Dancing+Script:wght@600;700&family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css?v=9" />
+  <link rel="stylesheet" href="css/styles.css?v=10" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎂%3C/text%3E%3C/svg%3E" />
 </head>
 <body>
@@ -259,6 +259,105 @@
       </div>
     </section>
 
+    <!-- ============ SCREEN 8.5: WATCH QUIZ ============ -->
+    <section class="screen" data-screen="quiz">
+      <div class="stack">
+        <h2 class="title-script sm">One More Gift ⌚</h2>
+        <p class="tiny" id="quizHint">I want to gift you a watch — answer these first 💗</p>
+
+        <form class="quiz-card" id="quizForm" novalidate>
+          <label class="quiz-q">
+            <span class="quiz-label">1. Your favourite food? 🍛</span>
+            <input class="quiz-input" type="text" name="Favourite food" placeholder="Type here…" autocomplete="off">
+          </label>
+
+          <label class="quiz-q">
+            <span class="quiz-label">2. Your favourite colour? 🎨</span>
+            <input class="quiz-input" type="text" name="Favourite colour" placeholder="Type here…" autocomplete="off">
+          </label>
+
+          <label class="quiz-q">
+            <span class="quiz-label">3. Your favourite person? 😏</span>
+            <select class="quiz-input quiz-select" name="Favourite person">
+              <option value="" selected disabled>Pick one…</option>
+              <option>Niraj 💗</option>
+              <option>Niraj 😍</option>
+              <option>Niraj 🥰</option>
+            </select>
+          </label>
+
+          <label class="quiz-q">
+            <span class="quiz-label">4. Favourite ice cream? 🍨</span>
+            <input class="quiz-input" type="text" name="Favourite ice cream" placeholder="Type here…" autocomplete="off">
+          </label>
+
+          <label class="quiz-q">
+            <span class="quiz-label">5. All-time favourite movie? 🎬</span>
+            <input class="quiz-input" type="text" name="All-time favourite movie" placeholder="Type here…" autocomplete="off">
+          </label>
+
+          <label class="quiz-q">
+            <span class="quiz-label">6. Beach or Hills? 🌊🏔️</span>
+            <select class="quiz-input quiz-select" name="Beach or Hills">
+              <option value="" selected disabled>Pick one…</option>
+              <option>Beach 🌊</option>
+              <option>Hills 🏔️</option>
+            </select>
+          </label>
+
+          <label class="quiz-q">
+            <span class="quiz-label">7. Favourite animal? 🐾</span>
+            <select class="quiz-input quiz-select" name="Favourite animal">
+              <option value="" selected disabled>Pick one…</option>
+              <option>Dog 🐶</option>
+              <option>Dog 🐕</option>
+              <option>Dog 🦮</option>
+            </select>
+          </label>
+
+          <label class="quiz-q">
+            <span class="quiz-label">8. Dream destination? ✈️</span>
+            <select class="quiz-input quiz-select" name="Dream destination">
+              <option value="" selected disabled>Pick one…</option>
+              <option>Switzerland 🇨🇭</option>
+              <option>Switzerland ❄️</option>
+              <option>Switzerland 🏔️</option>
+            </select>
+          </label>
+
+          <label class="quiz-q">
+            <span class="quiz-label">9. Favourite place? 📍</span>
+            <input class="quiz-input" type="text" name="Favourite place" placeholder="Type here…" autocomplete="off">
+          </label>
+        </form>
+
+        <p class="quiz-error hidden" id="quizError">Please answer everything first 💗</p>
+
+        <button class="btn btn-primary sm btn-whatsapp" id="quizShareBtn" type="button">
+          <svg class="wa-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.347-.347.52-.52.174-.174.232-.297.347-.495.116-.198.058-.372-.03-.52-.087-.149-.669-1.611-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.29.173-1.414-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Share with me
+        </button>
+
+        <button class="btn-link hidden" id="quizCopyFallbackBtn" type="button">WhatsApp didn’t open? Copy instead</button>
+
+        <button class="btn btn-primary sm hidden" id="quizContinue" type="button">Continue →</button>
+      </div>
+    </section>
+
+    <!-- Fallback: copy the answers and paste them in WhatsApp manually -->
+    <div class="modal hidden" id="quizModal" role="dialog" aria-modal="true" aria-labelledby="quizModalTitle">
+      <div class="modal-card">
+        <h3 class="modal-title" id="quizModalTitle">Copy your answers 💌</h3>
+        <p class="tiny">Please click on <strong>Copy answers</strong>, share it with me on WhatsApp, and come back here 💗</p>
+        <textarea class="modal-text" id="quizModalText" readonly rows="8"></textarea>
+        <div class="modal-actions">
+          <button class="btn btn-primary sm" id="quizModalCopyBtn" type="button">Copy answers</button>
+          <button class="btn btn-ghost sm" id="quizModalCloseBtn" type="button">Done</button>
+        </div>
+        <p class="tiny" id="quizModalStatus"></p>
+      </div>
+    </div>
+
     <!-- ============ SCREEN 9: PUZZLE REVEAL ============ -->
     <section class="screen" data-screen="puzzle">
       <div class="stack">
@@ -375,6 +474,6 @@
   <!-- Audio: source is set by JS once a song is picked on the "Pick Our Song" screen. -->
   <audio id="bgm" loop preload="none"></audio>
 
-  <script src="js/app.js?v=9"></script>
+  <script src="js/app.js?v=10"></script>
 </body>
 </html>

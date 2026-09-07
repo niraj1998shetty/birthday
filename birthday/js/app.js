@@ -628,6 +628,7 @@
     { emoji: '🍦', label: 'Food & Ice Cream', text: 'Your favourite food plus ice cream, delivered to your door 🍦' },
   ];
   let wheelSpun = false;
+  let wheelWon = null;   // the promise she landed on — shared in the WhatsApp message
 
   function buildWheel() {
     wheelEl.innerHTML = '';
@@ -656,21 +657,149 @@
     const rotation = 5 * 360 + (360 - centerAngle);
     wheelEl.style.transform = `rotate(${rotation}deg)`;
     setTimeout(() => {
-      wheelResultText.textContent = wheelPromises[index].text;
+      wheelWon = wheelPromises[index];
+      wheelResultText.textContent = wheelWon.text;
       wheelResult.classList.remove('hidden');
       spawnHearts(6);
     }, 3050);
   });
 
-  document.getElementById('wheelContinue').addEventListener('click', () => show('puzzle'));
+  document.getElementById('wheelContinue').addEventListener('click', () => show('quiz'));
 
   function resetWheel() {
     wheelSpun = false;
+    wheelWon = null;
     wheelSpinBtn.disabled = false;
     wheelResult.classList.add('hidden');
     wheelEl.style.transition = 'none';
     wheelEl.style.transform = 'rotate(0deg)';
     requestAnimationFrame(() => { wheelEl.style.transition = ''; });
+  }
+
+  /* ---------- Screen 8.5: watch quiz → share on WhatsApp ---------- */
+  const MY_WHATSAPP = '919538263599';   // country code + number, digits only
+
+  const quizForm        = document.getElementById('quizForm');
+  const quizFields      = Array.from(quizForm.querySelectorAll('.quiz-input'));
+  const quizHint        = document.getElementById('quizHint');
+  const quizError       = document.getElementById('quizError');
+  const quizShareBtn    = document.getElementById('quizShareBtn');
+  const quizCopyBack    = document.getElementById('quizCopyFallbackBtn');
+  const quizContinue    = document.getElementById('quizContinue');
+  const quizModal       = document.getElementById('quizModal');
+  const quizModalText   = document.getElementById('quizModalText');
+  const quizModalCopy   = document.getElementById('quizModalCopyBtn');
+  const quizModalClose  = document.getElementById('quizModalCloseBtn');
+  const quizModalStatus = document.getElementById('quizModalStatus');
+  let quizShared = false;
+
+  function quizMessage() {
+    const lines = ['Hi Niraj 💗 Here are my answers — now where is my watch? ⌚', ''];
+    quizFields.forEach((field, i) => {
+      lines.push(`${i + 1}. ${field.name}: ${field.value.trim()}`);
+    });
+    if (wheelWon) {
+      lines.push('', `🎡 And the wheel gave me: ${wheelWon.label} ${wheelWon.emoji}`);
+    }
+    lines.push('', 'Thank you for all of this 🥰');
+    return lines.join('\n');
+  }
+
+  function quizFirstEmpty() {
+    return quizFields.find(f => !f.value.trim()) || null;
+  }
+
+  function revealQuizContinue() {
+    if (!quizShared || !quizContinue.classList.contains('hidden')) return;
+    quizContinue.classList.remove('hidden');
+    quizHint.textContent = 'Got it — you are the best 💗';
+    spawnHearts(6);
+  }
+
+  function openQuizModal() {
+    quizModalText.value = quizMessage();
+    quizModalStatus.textContent = '';
+    quizModal.classList.remove('hidden');
+  }
+
+  async function copyQuizText() {
+    const text = quizModalText.value;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        throw new Error('no clipboard api');
+      }
+    } catch {
+      // Older iOS Safari / non-secure contexts: fall back to selecting the textarea.
+      quizModalText.focus();
+      quizModalText.setSelectionRange(0, text.length);
+      try {
+        if (!document.execCommand('copy')) throw new Error('execCommand failed');
+      } catch {
+        quizModalStatus.textContent = 'Please long-press the text above and copy it 💗';
+        return;
+      }
+    }
+    quizModalStatus.textContent = 'Copied! Now paste it to me on WhatsApp 💬';
+    quizShared = true;
+  }
+
+  quizShareBtn.addEventListener('click', () => {
+    const empty = quizFirstEmpty();
+    if (empty) {
+      quizFields.forEach(f => f.classList.toggle('missing', !f.value.trim()));
+      quizError.classList.remove('hidden');
+      empty.focus();
+      return;
+    }
+    quizError.classList.add('hidden');
+    quizFields.forEach(f => f.classList.remove('missing'));
+
+    const url = `https://wa.me/${MY_WHATSAPP}?text=${encodeURIComponent(quizMessage())}`;
+    const win = window.open(url, '_blank');
+    if (!win) {
+      // Popup blocked, or no WhatsApp handler — offer copy + paste instead.
+      openQuizModal();
+      return;
+    }
+    quizShared = true;
+    quizCopyBack.classList.remove('hidden');
+    quizHint.textContent = 'Send it to me, then come back here 💗';
+    // She is usually gone to WhatsApp now; the visibility listener below shows
+    // Continue when she returns. This timer covers desktop, where nothing blurs.
+    setTimeout(revealQuizContinue, 4000);
+  });
+
+  quizCopyBack.addEventListener('click', openQuizModal);
+  quizModalCopy.addEventListener('click', copyQuizText);
+  quizModalClose.addEventListener('click', () => {
+    quizModal.classList.add('hidden');
+    quizShared = true;
+    revealQuizContinue();
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) revealQuizContinue();
+  });
+  window.addEventListener('focus', revealQuizContinue);
+
+  quizFields.forEach(f => {
+    f.addEventListener('input',  () => f.classList.remove('missing'));
+    f.addEventListener('change', () => f.classList.remove('missing'));
+  });
+
+  quizContinue.addEventListener('click', () => show('puzzle'));
+
+  function resetQuiz() {
+    quizShared = false;
+    quizForm.reset();
+    quizFields.forEach(f => f.classList.remove('missing'));
+    quizError.classList.add('hidden');
+    quizModal.classList.add('hidden');
+    quizCopyBack.classList.add('hidden');
+    quizContinue.classList.add('hidden');
+    quizHint.textContent = 'I want to gift you a watch — answer these first 💗';
   }
 
   /* ---------- Screen 9: rearrange-the-photo jigsaw ---------- */
@@ -1150,6 +1279,7 @@
     buildDeck();
     resetScratch();
     resetWheel();
+    resetQuiz();
     buildPuzzle();
     resetPolaroid();
     envelope.classList.remove('open');
