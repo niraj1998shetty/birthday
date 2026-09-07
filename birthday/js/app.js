@@ -82,13 +82,18 @@
     if (name === 'final') startConfetti();
     if (name === 'letter') startLetter();
     if (name === 'scratch') sizeScratchCanvas();
-    syncDevNav();
+    // syncDevNav();   // dev nav — off for now
   }
 
   /* ---------- Dev screen skipper ----------------------------------------
+     TURNED OFF FOR NOW — uncomment the block below (and the two commented
+     lines marked "dev nav" elsewhere in this file, plus the .dev-nav styles
+     in css/styles.css) to bring the testing bar back.
+
      Testing aid only: jump straight to any screen without playing through.
-     Add ?dev=0 to the URL (or delete this block) before sharing the page.
+     Add ?dev=0 to the URL before sharing the page.
      Press "d" to hide/show the bar. */
+  /*
   const DEV_NAV = new URLSearchParams(location.search).get('dev') !== '0';
   let devSelect = null;
 
@@ -138,6 +143,34 @@
   }
 
   if (DEV_NAV) buildDevNav();
+  */
+
+  /* ---------- "Seen it already" skip ------------------------------------
+     The long, playful screens get a tiny opt-out so she doesn't have to
+     replay them end-to-end when she opens the page a second time. */
+  const SKIP_TO = {
+    memories: 'scratch',
+    scratch:  'wheel',
+    wheel:    'quiz',
+    quiz:     'polaroid',
+  };
+
+  Object.entries(SKIP_TO).forEach(([from, to]) => {
+    const screen = byName[from];
+    if (!screen) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn-skip';
+    btn.textContent = 'I’m skipping this — seen it already 🙈';
+    btn.addEventListener('click', () => show(to));
+    // Straight onto the screen, not the .stack — .has-skip turns the screen
+    // into a column so this drops to the bottom without ever covering content.
+    screen.classList.add('has-skip');
+    screen.appendChild(btn);
+  });
+
+  // Keeps the skip pill clear of the dev bar while that testing aid is on.
+  // if (DEV_NAV) document.body.classList.add('dev-on');   // dev nav — off for now
 
   // Tries to load a real photo over a CSS gradient placeholder.
   // If the file is missing, the gradient (and any placeholder emoji) stays put.
@@ -345,10 +378,7 @@
   candleObserver.observe(byName.candle, { attributes: true, attributeFilter: ['class'] });
 
   /* ---------- Screen 4: wish ---------- */
-  document.getElementById('wishDoneBtn').addEventListener('click', () => show('roses'));
-
-  /* ---------- Screen 5: roses ---------- */
-  document.getElementById('rosesContinue').addEventListener('click', () => show('memories'));
+  document.getElementById('wishDoneBtn').addEventListener('click', () => show('puzzle'));
 
   /* ---------- Screen 6: memories (swipe deck) ---------- */
   // Add real photos in images/memories/ and update this array.
@@ -702,9 +732,10 @@
     quizFields.forEach((field, i) => {
       lines.push(`${i + 1}. ${field.name}: ${field.value.trim()}`);
     });
-    if (wheelWon) {
-      lines.push('', `🎡 And the wheel gave me: ${wheelWon.label} ${wheelWon.emoji}`);
-    }
+    // Always report the wheel, even if she skipped it — that gift is the whole point.
+    lines.push('', wheelWon
+      ? `🎡 The wheel picked my gift: ${wheelWon.label} ${wheelWon.emoji}`
+      : '🎡 The wheel: I skipped the spin 🙈');
     lines.push('', 'Thank you for all of this 🥰');
     return lines.join('\n');
   }
@@ -812,7 +843,7 @@
 
   watchContinue.addEventListener('click', () => {
     watchModal.classList.add('hidden');
-    show('puzzle');
+    show('polaroid');
   });
 
   function resetQuiz() {
@@ -828,19 +859,19 @@
     quizHint.textContent = 'I want to gift you a watch — answer these first 💗';
   }
 
-  /* ---------- Screen 9: rearrange-the-photo jigsaw ---------- */
+  /* ---------- Screen 5: rearrange-the-photo jigsaw → bouquet ---------- */
   const puzzleGrid     = document.getElementById('puzzleGrid');
   const puzzleTitle    = document.getElementById('puzzleTitle');
   const puzzleHint     = document.getElementById('puzzleHint');
   const puzzleMoves    = document.getElementById('puzzleMoves');
   const puzzlePeek     = document.getElementById('puzzlePeek');
   const puzzleReveal   = document.getElementById('puzzleReveal');
-  const puzzleContinue = document.getElementById('puzzleContinue');
+  const bouquetModal   = document.getElementById('bouquetModal');
   const PUZZLE_COLS = 3, PUZZLE_ROWS = 3;
   const PUZZLE_SIZE = PUZZLE_COLS * PUZZLE_ROWS;
   const PUZZLE_PHOTO = 'images/puzzle-photo.jpg';
-  const PUZZLE_HINT_START  = 'Tap two pieces to swap · green dot = right spot 🧩';
-  const PUZZLE_TITLE_START = 'Piece It Together';
+  const PUZZLE_HINT_START  = 'Tap two pieces to swap · green dot = right spot 💐';
+  const PUZZLE_TITLE_START = 'Solve It For Your Bouquet';
 
   // order[slot] = which piece of the photo currently sits in that slot.
   let puzzleOrder    = [];
@@ -851,8 +882,7 @@
   let puzzleRevealing = false;
   let puzzlePeekTimer = null;
   let puzzleRevealTimer = null;
-  let puzzleZoomTimer = null;
-  let puzzleZoomLayer = null;
+  let puzzleBouquetTimer = null;
   // puzzleLookAlike[piece] = id shared by every piece that renders identically.
   // This photo has blank white corners, so two of them are indistinguishable —
   // without this, the picture can look finished while the order is still "wrong".
@@ -949,57 +979,17 @@
     } while (puzzleIsComplete() && ++attempts < 20);
   }
 
-  // Flies the finished photo out of the grid to fill the screen, holds, flies back.
-  function zoomSolvedPhoto() {
-    const start = puzzleGrid.getBoundingClientRect();
-    const layer = document.createElement('div');
-    layer.className = 'puzzle-zoom-layer';
-    layer.innerHTML = `
-      <div class="puzzle-zoom-photo"></div>
-      <p class="puzzle-zoom-caption">Our memory, back in one piece 💖<small>tap to close</small></p>
-    `;
-    const photo = layer.querySelector('.puzzle-zoom-photo');
-    photo.style.backgroundImage = `url('${PUZZLE_PHOTO}'), linear-gradient(135deg, #ffd1dc, #f4a6b8)`;
-    setRect(photo, start);
-    document.body.appendChild(layer);
-    puzzleZoomLayer = layer;
-    void photo.offsetWidth;   // settle the start rect so the flight animates
-
-    const side = Math.min(window.innerWidth * 0.92, window.innerHeight * 0.64);
-    requestAnimationFrame(() => {
-      layer.classList.add('open');
-      setRect(photo, {
-        left: (window.innerWidth - side) / 2,
-        top: (window.innerHeight - side) / 2 - window.innerHeight * 0.05,
-        width: side,
-        height: side,
-      });
-    });
-
-    let closing = false;
-    const close = () => {
-      if (closing) return;
-      closing = true;
-      clearTimeout(puzzleZoomTimer);
-      layer.classList.remove('open');
-      setRect(photo, puzzleGrid.getBoundingClientRect());  // re-measure in case of scroll/resize
-      setTimeout(() => {
-        layer.remove();
-        if (puzzleZoomLayer === layer) puzzleZoomLayer = null;
-        if (puzzleSolved) puzzleContinue.classList.remove('hidden');
-      }, 680);
-    };
-
-    layer.addEventListener('click', close);
-    puzzleZoomTimer = setTimeout(close, 3400);
+  // Her reward for finishing the puzzle: the bouquet, handed over in a popup.
+  function openBouquet() {
+    bouquetModal.classList.remove('hidden');
+    burstConfetti(60);
+    spawnHearts(10);
   }
 
-  function setRect(el, r) {
-    el.style.left   = r.left + 'px';
-    el.style.top    = r.top + 'px';
-    el.style.width  = r.width + 'px';
-    el.style.height = r.height + 'px';
-  }
+  document.getElementById('bouquetContinue').addEventListener('click', () => {
+    bouquetModal.classList.add('hidden');
+    show('memories');
+  });
 
   function onPuzzleSolved(revealed = false) {
     puzzleSolved = true;
@@ -1008,7 +998,7 @@
     puzzleGrid.classList.add('solved');
     puzzleTitle.textContent = revealed ? 'Here It Is 💗' : 'You Did It! 🎉';
     puzzleHint.textContent = revealed
-      ? 'Our memory, back in one piece'
+      ? 'All yours anyway 💐'
       : `Pieced together in ${puzzleMoveCount} moves 💖`;
     puzzlePeek.classList.add('hidden');
     puzzleReveal.classList.add('hidden');
@@ -1016,8 +1006,8 @@
     burstConfetti(75);
     spawnHearts(14, puzzleGrid.getBoundingClientRect());
 
-    // Wait for the gaps to collapse into one photo before flying it out.
-    puzzleZoomTimer = setTimeout(zoomSolvedPhoto, 560);
+    // Let the gaps collapse into one picture, then hand her the bouquet.
+    puzzleBouquetTimer = setTimeout(openBouquet, 900);
   }
 
   // "I give up": walk the pieces home one swap at a time so she still sees it
@@ -1085,9 +1075,7 @@
   function buildPuzzle() {
     clearTimeout(puzzlePeekTimer);
     clearTimeout(puzzleRevealTimer);
-    clearTimeout(puzzleZoomTimer);
-    puzzleZoomLayer?.remove();
-    puzzleZoomLayer = null;
+    clearTimeout(puzzleBouquetTimer);
     puzzleGrid.innerHTML = '';
     puzzleGrid.classList.remove('solved', 'peeking');
     puzzleTiles = [];
@@ -1099,7 +1087,7 @@
     puzzleHint.textContent = PUZZLE_HINT_START;
     puzzlePeek.classList.remove('hidden');
     puzzleReveal.classList.remove('hidden');
-    puzzleContinue.classList.add('hidden');
+    bouquetModal.classList.add('hidden');
 
     puzzleOrder = Array.from({ length: PUZZLE_SIZE }, (_, i) => i);
     shufflePuzzleOrder();
@@ -1132,7 +1120,6 @@
     puzzlePeekTimer = setTimeout(() => puzzleGrid.classList.remove('peeking'), 1200);
   });
 
-  puzzleContinue.addEventListener('click', () => show('polaroid'));
 
   /* ---------- Screen 10: photo booth ---------- */
   const shutterBtn       = document.getElementById('shutterBtn');

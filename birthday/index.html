@@ -183,9 +183,26 @@
     </section>
 
     <!-- ============ SCREEN 5: ROSE BOUQUET ============ -->
-    <section class="screen" data-screen="roses">
+    <section class="screen" data-screen="puzzle">
       <div class="stack">
-        <h2 class="title-script sm">Your Rose Bouquet <span class="rose">🌹</span></h2>
+        <h2 class="title-script sm" id="puzzleTitle">Solve It For Your Bouquet</h2>
+        <p class="tiny" id="puzzleHint">Tap two pieces to swap · finish the photo and the bouquet is yours 💐</p>
+
+        <!-- Placeholder: swap with images/puzzle-photo.jpg to change the hidden photo -->
+        <div class="puzzle-grid" id="puzzleGrid"></div>
+
+        <div class="puzzle-bar">
+          <span class="puzzle-moves" id="puzzleMoves">0 moves</span>
+          <button class="btn btn-ghost xs" id="puzzlePeek">👀 Peek</button>
+          <button class="btn btn-ghost xs" id="puzzleReveal">🙈 I give up</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- The prize for finishing the puzzle -->
+    <div class="modal hidden" id="bouquetModal" role="dialog" aria-modal="true" aria-labelledby="bouquetModalTitle">
+      <div class="modal-card">
+        <h3 class="modal-title" id="bouquetModalTitle">Your Rose Bouquet <span class="rose">🌹</span></h3>
 
         <div class="bouquet">
           <!-- Generated from images/bouquet.jpg by tools/make-png.ps1 (transparent backdrop) -->
@@ -196,9 +213,12 @@
           <div class="petals" aria-hidden="true"></div>
         </div>
 
-        <button class="btn btn-primary" id="rosesContinue">Continue →</button>
+        <p class="modal-note">Please take your bouquet, birthday girl 🥰</p>
+        <div class="modal-actions">
+          <button class="btn btn-primary sm" id="bouquetContinue" type="button">Continue →</button>
+        </div>
       </div>
-    </section>
+    </div>
 
     <!-- ============ SCREEN 6: SWEET MOMENTS ============ -->
     <section class="screen" data-screen="memories">
@@ -329,6 +349,11 @@
             <span class="quiz-label">9. Favourite place? 📍</span>
             <input class="quiz-input" type="text" name="Favourite place" placeholder="Type here…" autocomplete="off">
           </label>
+
+          <label class="quiz-q">
+            <span class="quiz-label">10. What do you want right now for your birthday? 🎁</span>
+            <input class="quiz-input" type="text" name="What I want right now for my birthday" placeholder="Anything you want — ask me 🥰" autocomplete="off">
+          </label>
         </form>
 
         <p class="quiz-error hidden" id="quizError">Please answer everything first 💗</p>
@@ -361,9 +386,9 @@
       <div class="modal-card">
         <div class="modal-emoji" aria-hidden="true">🎉</div>
         <h3 class="modal-title" id="watchModalTitle">You won a watch! ⌚</h3>
-        <!-- Swap in your real photo at images/watch-gift.png — the ⌚ shows until then -->
+        <!-- Swap in your real photo at images/watch-gift.jpeg — the ⌚ shows until then -->
         <div class="watch-shot" id="watchShot">
-          <img src="images/watch-gift.png" alt="Your new watch"
+          <img src="images/watch-gift.jpeg" alt="Your new watch"
                onerror="this.closest('.watch-shot').classList.add('no-img'); this.remove();">
           <span class="watch-fallback" aria-hidden="true">⌚</span>
         </div>
@@ -387,25 +412,6 @@
         <p class="tiny" id="quizModalStatus"></p>
       </div>
     </div>
-
-    <!-- ============ SCREEN 9: PUZZLE REVEAL ============ -->
-    <section class="screen" data-screen="puzzle">
-      <div class="stack">
-        <h2 class="title-script sm" id="puzzleTitle">Piece It Together</h2>
-        <p class="tiny" id="puzzleHint">Tap two pieces to swap them 🧩</p>
-
-        <!-- Placeholder: swap with images/puzzle-photo.jpg to change the hidden photo -->
-        <div class="puzzle-grid" id="puzzleGrid"></div>
-
-        <div class="puzzle-bar">
-          <span class="puzzle-moves" id="puzzleMoves">0 moves</span>
-          <button class="btn btn-ghost xs" id="puzzlePeek">👀 Peek</button>
-          <button class="btn btn-ghost xs" id="puzzleReveal">🙈 I give up</button>
-        </div>
-
-        <button class="btn btn-primary sm hidden" id="puzzleContinue">Continue →</button>
-      </div>
-    </section>
 
     <!-- ============ SCREEN 10: PHOTO BOOTH ============ -->
     <section class="screen" data-screen="polaroid">

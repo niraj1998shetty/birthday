@@ -272,6 +272,37 @@ html, body {
   100% { transform: translateX(6px); }
 }
 
+/* Tiny opt-out on the replayable screens (added by app.js).
+   Plain tappable text, last thing on the screen.
+
+   It stays in normal flow, so it can never sit on top of the content: the
+   screen becomes a column, the stack takes the leftover space with auto
+   margins (keeping it centred), and the skip is the final row. When a coupon
+   or card appears and the stack grows, those auto margins shrink to 0 and the
+   skip simply moves down below it. */
+.screen.has-skip { flex-direction: column; }
+.screen.has-skip .stack { margin: auto 0; }
+
+.btn-skip {
+  flex: none;
+  margin: 8px auto 0;
+  padding: 4px 6px;
+  border: none;
+  background: none;
+  color: #c093a1;
+  font-family: inherit;
+  font-size: .58rem;
+  font-weight: 400;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color .2s ease;
+}
+.btn-skip:hover { color: var(--pink); text-decoration: underline; }
+.btn-skip:active { color: var(--pink); }
+/* Clear of the dev screen-skipper bar (see .dev-nav) while that aid is on */
+/* body.dev-on .btn-skip { margin-bottom: 40px; } */
+
 .hidden { display: none !important; }
 
 /* -------- Screen 1: welcome -------- */
@@ -641,7 +672,7 @@ html, body {
   color: #fff;
 }
 
-/* -------- Screen 5: roses -------- */
+/* -------- The bouquet, won by solving the puzzle on screen 5 -------- */
 .rose { color: var(--pink); }
 
 .bouquet {
@@ -673,6 +704,10 @@ html, body {
   inset: -20px;
   pointer-events: none;
 }
+/* Inside the popup it has a card to fit into, not a whole screen. */
+.modal .bouquet { margin: 6px 0 0; }
+.modal .bouquet-img { width: min(56vw, 220px); max-height: 38dvh; }
+.modal .bouquet-emoji { font-size: clamp(5rem, 18vw, 7rem); }
 
 /* -------- Screen 6: memories deck -------- */
 .deck {
@@ -1205,67 +1240,11 @@ html, body {
   text-align: left;
 }
 
-/* Full-screen zoom of the finished photo, animated from the grid's own rect.
-   Sizes/offsets are set inline by the script so it can fly out and back. */
-.puzzle-zoom-layer {
-  position: fixed;
-  inset: 0;
-  z-index: 70;
-  cursor: pointer;
-  background: rgba(58, 26, 36, 0);
-  transition: background .55s ease;
-}
-.puzzle-zoom-layer.open { background: rgba(58, 26, 36, .8); }
-
-.puzzle-zoom-photo {
-  position: fixed;
-  border-radius: 10px;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
-  box-shadow: 0 26px 60px rgba(0, 0, 0, .45);
-  transition: top .65s cubic-bezier(.22, .8, .24, 1),
-              left .65s cubic-bezier(.22, .8, .24, 1),
-              width .65s cubic-bezier(.22, .8, .24, 1),
-              height .65s cubic-bezier(.22, .8, .24, 1),
-              border-radius .65s ease;
-}
-.puzzle-zoom-layer.open .puzzle-zoom-photo { border-radius: 20px; }
-
-.puzzle-zoom-caption {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 7vh;
-  margin: 0;
-  text-align: center;
-  font-family: 'Dancing Script', cursive;
-  font-weight: 700;
-  font-size: 1.9rem;
-  color: #fff0f5;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, .5);
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity .45s ease .3s, transform .45s ease .3s;
-}
-.puzzle-zoom-caption small {
-  display: block;
-  margin-top: 4px;
-  font-family: inherit;
-  font-size: .95rem;
-  font-weight: 400;
-  opacity: .8;
-}
-.puzzle-zoom-layer.open .puzzle-zoom-caption {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 /* One-shot confetti burst on a fixed layer, removed once the pieces land. */
 .burst-layer {
   position: fixed;
   inset: 0;
-  z-index: 80;   /* above .puzzle-zoom-layer, so it rains over the zoomed photo */
+  z-index: 80;   /* above the modals, so it rains over the bouquet popup */
   pointer-events: none;
   overflow: hidden;
 }
@@ -1688,7 +1667,8 @@ html, body {
   to { transform: translateY(110vh) rotate(360deg); }
 }
 
-/* -------- Dev screen skipper (testing only, safe to delete) -------- */
+/* -------- Dev screen skipper (testing only) — OFF FOR NOW -------- */
+/*
 .dev-nav {
   position: fixed;
   left: 50%;
@@ -1720,6 +1700,7 @@ html, body {
 .dev-close { padding: 5px 8px; }
 .dev-select { max-width: 132px; }
 .dev-select option { color: #3a1a24; }
+*/
 
 /* -------- Responsive niceties -------- */
 @media (max-width: 480px) {
