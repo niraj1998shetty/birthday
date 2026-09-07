@@ -78,7 +78,7 @@
     if (!el) return;
     el.classList.add('active');
     window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
-    if (name === 'welcome') pauseMusic();
+    if (name === 'welcome') { pauseMusic(); resetQuiz(); }
     if (name === 'final') startConfetti();
     if (name === 'letter') startLetter();
     if (name === 'scratch') sizeScratchCanvas();
@@ -691,6 +691,10 @@
   const quizModalCopy   = document.getElementById('quizModalCopyBtn');
   const quizModalClose  = document.getElementById('quizModalCloseBtn');
   const quizModalStatus = document.getElementById('quizModalStatus');
+  const quizTeaseModal  = document.getElementById('quizTeaseModal');
+  const quizTeaseOk     = document.getElementById('quizTeaseOkBtn');
+  const watchModal      = document.getElementById('watchModal');
+  const watchContinue   = document.getElementById('watchModalContinue');
   let quizShared = false;
 
   function quizMessage() {
@@ -755,7 +759,17 @@
     }
     quizError.classList.add('hidden');
     quizFields.forEach(f => f.classList.remove('missing'));
+    // Confession first; WhatsApp opens from the modal's button so the tap that
+    // opens the new tab is still a user gesture (popup blockers allow it).
+    quizTeaseModal.classList.remove('hidden');
+  });
 
+  quizTeaseOk.addEventListener('click', () => {
+    quizTeaseModal.classList.add('hidden');
+    shareOnWhatsApp();
+  });
+
+  function shareOnWhatsApp() {
     const url = `https://wa.me/${MY_WHATSAPP}?text=${encodeURIComponent(quizMessage())}`;
     const win = window.open(url, '_blank');
     if (!win) {
@@ -769,7 +783,7 @@
     // She is usually gone to WhatsApp now; the visibility listener below shows
     // Continue when she returns. This timer covers desktop, where nothing blurs.
     setTimeout(revealQuizContinue, 4000);
-  });
+  }
 
   quizCopyBack.addEventListener('click', openQuizModal);
   quizModalCopy.addEventListener('click', copyQuizText);
@@ -789,7 +803,17 @@
     f.addEventListener('change', () => f.classList.remove('missing'));
   });
 
-  quizContinue.addEventListener('click', () => show('puzzle'));
+  // Continue does not leave the screen yet — first the prize reveal.
+  quizContinue.addEventListener('click', () => {
+    watchModal.classList.remove('hidden');
+    burstConfetti(80);
+    spawnHearts(8);
+  });
+
+  watchContinue.addEventListener('click', () => {
+    watchModal.classList.add('hidden');
+    show('puzzle');
+  });
 
   function resetQuiz() {
     quizShared = false;
@@ -797,6 +821,8 @@
     quizFields.forEach(f => f.classList.remove('missing'));
     quizError.classList.add('hidden');
     quizModal.classList.add('hidden');
+    quizTeaseModal.classList.add('hidden');
+    watchModal.classList.add('hidden');
     quizCopyBack.classList.add('hidden');
     quizContinue.classList.add('hidden');
     quizHint.textContent = 'I want to gift you a watch — answer these first 💗';
@@ -1125,7 +1151,7 @@
     setTimeout(() => flashEl.classList.remove('active'), 500);
     setTimeout(() => {
       polaroidEl.classList.add('developed');
-      polaroidHint.textContent = 'Developing our memory… 💗';
+      polaroidHint.textContent = 'Developing your image 💗';
     }, 250);
     setTimeout(() => polaroidContinue.classList.remove('hidden'), 1400);
   });
@@ -1349,5 +1375,11 @@
       container.appendChild(s);
     }
   }
+
+  /* Nothing here is saved — no localStorage, no cookies. But browsers refill
+     text inputs themselves after a refresh or a back/forward (bfcache) restore,
+     so wipe the quiz on every page show to start her off with a blank card. */
+  window.addEventListener('pageshow', resetQuiz);
+  resetQuiz();
 
 })();

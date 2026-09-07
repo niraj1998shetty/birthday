@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Dancing+Script:wght@600;700&family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css?v=10" />
+  <link rel="stylesheet" href="css/styles.css?v=12" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎂%3C/text%3E%3C/svg%3E" />
 </head>
 <body>
@@ -344,6 +344,36 @@
       </div>
     </section>
 
+    <!-- Little confession, shown before WhatsApp opens -->
+    <div class="modal hidden" id="quizTeaseModal" role="dialog" aria-modal="true" aria-labelledby="quizTeaseTitle">
+      <div class="modal-card">
+        <div class="modal-emoji" aria-hidden="true">😌</div>
+        <h3 class="modal-title" id="quizTeaseTitle">A little confession…</h3>
+        <p class="modal-note">I already know all your answers 😄<br/>I just wanted to give you some task, so I did 😝</p>
+        <div class="modal-actions">
+          <button class="btn btn-primary sm" id="quizTeaseOkBtn" type="button">I understood 😊</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prize reveal after she comes back from WhatsApp -->
+    <div class="modal hidden" id="watchModal" role="dialog" aria-modal="true" aria-labelledby="watchModalTitle">
+      <div class="modal-card">
+        <div class="modal-emoji" aria-hidden="true">🎉</div>
+        <h3 class="modal-title" id="watchModalTitle">You won a watch! ⌚</h3>
+        <!-- Swap in your real photo at images/watch-gift.png — the ⌚ shows until then -->
+        <div class="watch-shot" id="watchShot">
+          <img src="images/watch-gift.png" alt="Your new watch"
+               onerror="this.closest('.watch-shot').classList.add('no-img'); this.remove();">
+          <span class="watch-fallback" aria-hidden="true">⌚</span>
+        </div>
+        <p class="modal-note">Coming Soon, birthday girl 🎁💗</p>
+        <div class="modal-actions">
+          <button class="btn btn-primary sm" id="watchModalContinue" type="button">Continue →</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Fallback: copy the answers and paste them in WhatsApp manually -->
     <div class="modal hidden" id="quizModal" role="dialog" aria-modal="true" aria-labelledby="quizModalTitle">
       <div class="modal-card">
@@ -393,7 +423,7 @@
             <div class="polaroid-photo">
               <span class="polaroid-emoji">💑</span>
             </div>
-            <p class="polaroid-caption">Us, always &amp; forever</p>
+            <p class="polaroid-caption">You &amp; Your Tumbler</p>
           </div>
         </div>
 
@@ -474,6 +504,6 @@
   <!-- Audio: source is set by JS once a song is picked on the "Pick Our Song" screen. -->
   <audio id="bgm" loop preload="none"></audio>
 
-  <script src="js/app.js?v=10"></script>
+  <script src="js/app.js?v=12"></script>
 </body>
 </html>

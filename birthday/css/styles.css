@@ -187,11 +187,14 @@ html, body {
 .title-script.big { font-size: clamp(2.4rem, 7vw, 4rem); }
 
 .title-name {
-  font-family: 'Playfair Display', serif;
-  font-weight: 900;
+  font-family: 'Dancing Script', cursive;
+  /* Dancing Script tops out at 700 — the extra heft comes from the stroke below */
+  font-weight: 700;
   color: var(--pink);
+  -webkit-text-stroke: .9px var(--pink);
   margin: -6px 0 8px;
-  font-size: clamp(1.6rem, 5vw, 2.6rem);
+  /* same scale as .title-script above it */
+  font-size: clamp(2rem, 6vw, 3.4rem);
   letter-spacing: 2px;
 }
 
@@ -1053,6 +1056,42 @@ html, body {
   gap: 10px;
   justify-content: center;
   flex-wrap: wrap;
+}
+.modal-emoji {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+.modal-note {
+  margin: 0;
+  font-size: .95rem;
+  line-height: 1.5;
+  color: #6a3a48;
+}
+
+/* Prize reveal: watch photo (falls back to a big ⌚ until the real image exists) */
+.watch-shot {
+  width: min(70vw, 200px);
+  aspect-ratio: 1;
+  margin: 2px auto;
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ffe3ea, #fff7f0);
+  box-shadow: inset 0 0 0 1px rgba(231, 154, 176, .5);
+  display: grid;
+  place-items: center;
+  animation: watchPop .55s cubic-bezier(.2, 1.4, .4, 1) both;
+}
+.watch-shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.watch-fallback { display: none; font-size: 4.5rem; }
+.watch-shot.no-img .watch-fallback { display: block; }
+@keyframes watchPop {
+  from { opacity: 0; transform: scale(.6) rotate(-8deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0); }
 }
 
 /* -------- Screen 9: sliding-swap jigsaw -------- */
