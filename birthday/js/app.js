@@ -180,13 +180,27 @@
 
   /* ---------- Screen 1.5: pick a song ---------- */
   // Drop matching photos in images/songs/1.jpg .. 5.jpg and audio in audio/song1.mp3 .. song5.mp3.
-  // Song names are set directly in index.html's .song-name spans.
+  // The song name shown is derived from the audio file name (see data-src), so just
+  // point data-src at your actual mp3 file and the label updates automatically.
   const songOptions = Array.from(document.querySelectorAll('.song-option'));
   const songsContinue = document.getElementById('songsContinue');
+
+  function filenameToTitle(path) {
+    const base = decodeURIComponent(path.split('/').pop() || '');
+    const withoutExt = base.replace(/\.[^.]+$/, '');
+    const spaced = withoutExt.replace(/[-_]+/g, ' ').trim();
+    return spaced.replace(/\w\S*/g, w => w[0].toUpperCase() + w.slice(1).toLowerCase());
+  }
 
   songOptions.forEach(opt => {
     const num = opt.dataset.song;
     setBgFallback(opt.querySelector('.song-photo'), `images/songs/${num}.jpg`);
+
+    const nameEl = opt.querySelector('.song-name');
+    if (nameEl && opt.dataset.src) {
+      const title = filenameToTitle(opt.dataset.src);
+      if (title) nameEl.textContent = title;
+    }
 
     opt.addEventListener('click', () => {
       songOptions.forEach(o => o.classList.remove('selected'));
@@ -506,8 +520,6 @@
   let scratchDrawing = false;
   let scratchMoveCount = 0;
 
-  setBgFallback(document.querySelector('.scratch-reveal'), 'images/scratch-reveal.jpg');
-
   function drawFoil() {
     const w = scratchCanvas.width, h = scratchCanvas.height;
     if (!w || !h) return;
@@ -527,7 +539,10 @@
 
   function sizeScratchCanvas() {
     const rect = scratchCanvas.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
+    if (!rect.width || !rect.height) {
+      requestAnimationFrame(sizeScratchCanvas);
+      return;
+    }
     scratchCanvas.width = rect.width;
     scratchCanvas.height = rect.height;
     if (!scratchDone) drawFoil();
@@ -605,12 +620,12 @@
   const wheelResult     = document.getElementById('wheelResult');
   const wheelResultText = document.getElementById('wheelResultText');
   const wheelPromises = [
-    { emoji: '🎬', label: 'Movie Night',      text: 'I owe you a cozy movie night, your pick 🎬' },
-    { emoji: '🍳', label: 'Breakfast in Bed', text: 'Breakfast in bed, made by me 🍳' },
-    { emoji: '💆', label: 'Spa Day',          text: 'A full spa day, just for you 💆' },
-    { emoji: '🌇', label: 'Sunset Drive',     text: 'A sunset drive to nowhere in particular 🌇' },
-    { emoji: '🎂', label: 'Bake Together',    text: 'An afternoon baking something sweet together 🎂' },
-    { emoji: '💌', label: 'Surprise Letter',  text: 'A surprise letter, whenever you least expect it 💌' },
+    { emoji: '👜', label: 'Hand Bag',     text: 'Pick any hand bag you like — I am ordering it to your door 👜' },
+    { emoji: '📱', label: 'Mobile Cover', text: 'A cute mobile cover, ordered and on its way to you 📱' },
+    { emoji: '👠', label: 'Shoes',        text: 'Send me the link — those shoes are getting delivered to you 👠' },
+    { emoji: '👗', label: 'Dress',        text: 'Any dress you want, ordered straight to your place 👗' },
+    { emoji: '💆', label: 'Spa Day',      text: 'A spa day booked and paid for — you just have to show up 💆' },
+    { emoji: '🍦', label: 'Food & Ice Cream', text: 'Your favourite food plus ice cream, delivered to your door 🍦' },
   ];
   let wheelSpun = false;
 

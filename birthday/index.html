@@ -62,22 +62,22 @@
 
         <!-- Photos/audio added later: drop images in images/songs/ and files in audio/ -->
         <div class="song-list" id="songGrid">
-          <button class="song-option" data-song="1" data-src="audio/song1.mp3">
+          <button class="song-option" data-song="1" data-src="audio/Naa Hege Helali.mp3">
             <span class="song-photo"><span class="song-photo-emoji">🎵</span></span>
             <span class="song-name">Song One</span>
             <span class="song-eq" aria-hidden="true"><span></span><span></span><span></span></span>
           </button>
-          <button class="song-option" data-song="2" data-src="audio/song2.mp3">
+          <button class="song-option" data-song="2" data-src="audio/Munjaane Manjalli.mp3">
             <span class="song-photo"><span class="song-photo-emoji">🎵</span></span>
             <span class="song-name">Song Two</span>
             <span class="song-eq" aria-hidden="true"><span></span><span></span><span></span></span>
           </button>
-          <button class="song-option" data-song="3" data-src="audio/song3.mp3">
+          <button class="song-option" data-song="3" data-src="audio/Preethiya Hesare Neenu.mp3">
             <span class="song-photo"><span class="song-photo-emoji">🎵</span></span>
             <span class="song-name">Song Three</span>
             <span class="song-eq" aria-hidden="true"><span></span><span></span><span></span></span>
           </button>
-          <button class="song-option" data-song="4" data-src="audio/song4.mp3">
+          <button class="song-option" data-song="4" data-src="audio/Helu Ba.mp3">
             <span class="song-photo"><span class="song-photo-emoji">🎵</span></span>
             <span class="song-name">Song Four</span>
             <span class="song-eq" aria-hidden="true"><span></span><span></span><span></span></span>
@@ -222,14 +222,14 @@
     <!-- ============ SCREEN 7: SCRATCH CARD ============ -->
     <section class="screen" data-screen="scratch">
       <div class="stack">
-        <h2 class="title-script sm">Scratch &amp; Reveal</h2>
+        <h2 class="title-script sm">Scratch &amp; Win</h2>
         <p class="tiny" id="scratchHint">Scratch the card with your finger ✨</p>
 
         <div class="scratch-wrap">
-          <!-- Placeholder: swap with images/scratch-reveal.jpg to change the surprise photo -->
+          <!-- Drop your photo at images/scratch-reveal.jpg — it shows behind the text at low opacity -->
           <div class="scratch-reveal">
-            <span class="scratch-reveal-emoji">🎁</span>
-            <p class="scratch-reveal-text">A surprise date night,<br/>just the two of us 💕</p>
+            <img class="scratch-reveal-bg" src="images/scratch-reveal.jpeg" alt="" onerror="this.style.display='none'">
+            <p class="scratch-reveal-text">Finally, you got the best BF, future husband &amp; best friend — all rolled into one: <strong>Niraj S Shetty</strong>, a.k.a. <strong>Mr. H2O</strong><br/>This is a one-time, lifetime offer, and you are the luckiest person alive 😘</p>
           </div>
           <canvas class="scratch-canvas" id="scratchCanvas"></canvas>
         </div>
@@ -241,8 +241,8 @@
     <!-- ============ SCREEN 8: SPIN THE WHEEL ============ -->
     <section class="screen" data-screen="wheel">
       <div class="stack">
-        <h2 class="title-script sm">Spin for a Promise</h2>
-        <p class="tiny" id="wheelHint">Whatever it lands on, I owe you 😉</p>
+        <h2 class="title-script sm">Spin for a Gift</h2>
+        <p class="tiny" id="wheelHint">Whatever it lands on, I am getting it to you — distance is not an excuse 😉</p>
 
         <div class="wheel-wrap">
           <div class="wheel-pointer" aria-hidden="true">▼</div>
