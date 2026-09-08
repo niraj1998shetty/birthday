@@ -654,7 +654,7 @@
     { emoji: '📱', label: 'Mobile Cover', text: 'A cute mobile cover, ordered and on its way to you 📱' },
     { emoji: '👠', label: 'Shoes',        text: 'Send me the link — those shoes are getting delivered to you 👠' },
     { emoji: '👗', label: 'Dress',        text: 'Any dress you want, ordered straight to your place 👗' },
-    { emoji: '💆', label: 'Spa Day',      text: 'A spa day booked and paid for — you just have to show up 💆' },
+    { emoji: '💆', label: 'Hair Spa Day',      text: 'A hair spa day booked and paid for — you just have to show up 💆' },
     { emoji: '🍦', label: 'Food & Ice Cream', text: 'Your favourite food plus ice cream, delivered to your door 🍦' },
   ];
   let wheelSpun = false;
