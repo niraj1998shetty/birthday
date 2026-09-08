@@ -1447,8 +1447,14 @@ html, body {
 /* -------- Screen 12: handwritten letter -------- */
 .letter-card {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: none;
   width: min(90vw, 520px);
-  padding: 26px 22px 30px;
+  /* Fixed page-like height on laptop and mobile — the words scroll, not the card. */
+  height: clamp(280px, 56vh, 520px);
+  height: clamp(280px, 56dvh, 520px);
+  padding: 24px 18px 8px 22px;
   background:
     linear-gradient(180deg, #fffdf5 0%, #fdf6e7 100%);
   border: 1px solid #f0e2c8;
@@ -1471,28 +1477,43 @@ html, body {
   box-shadow: 0 8px 16px rgba(230, 58, 107, .35);
 }
 
+/* Sits below the scrolling text so it never covers a line mid-scroll. */
 .letter-bears {
-  position: absolute;
-  right: 12px; bottom: 8px;
-  font-size: 1.5rem;
+  flex: 0 0 auto;
+  align-self: flex-end;
+  padding: 2px 4px 2px 0;
+  font-size: 1.4rem;
   opacity: .95;
   pointer-events: none;
 }
 
 .letter-body {
   position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 10px;
   font-family: 'Caveat', 'Dancing Script', cursive;
   font-weight: 500;
   font-size: clamp(1.25rem, 4.8vw, 1.65rem);
   line-height: 1.75;
   color: #3f2b3a;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(230, 58, 107, .35) transparent;
+}
+.letter-body::-webkit-scrollbar { width: 6px; }
+.letter-body::-webkit-scrollbar-thumb {
+  background: rgba(230, 58, 107, .32);
+  border-radius: 999px;
 }
 .letter-body .l-line { margin: 0 0 .55em; }
 .letter-body .l-line.salutation { color: #5a1a2a; font-weight: 600; }
 .letter-body .l-line.sign {
   margin-top: .4em;
-  margin-bottom: 0;
-  padding-right: 74px;
+  margin-bottom: .2em;
+  padding-right: 6px;
   text-align: right;
   color: var(--pink);
   font-weight: 600;

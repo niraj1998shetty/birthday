@@ -736,7 +736,6 @@
     lines.push('', wheelWon
       ? `🎡 The wheel picked my gift: ${wheelWon.label} ${wheelWon.emoji}`
       : '🎡 The wheel: I skipped the spin 🙈');
-    lines.push('', 'Thank you for all of this 🥰');
     return lines.join('\n');
   }
 
@@ -1167,11 +1166,11 @@
   /* ---------- Screen 12: handwritten letter ---------- */
   // Edit these lines to change the letter. Order = writing order.
   const letterLines = [
-    { text: 'Dear Vinmaa,', cls: 'salutation' },
-    { text: 'Happy Birthday to someone truly special! 🎂' },
-    { text: 'You are sweet, loyal, my rock, and I’m so grateful to have you in my life.' },
-    { text: 'You bring so much warmth and sweetness into my life. Every moment with you is precious.' },
-    { text: 'On your special day, I wish you endless love, laughter, and every little thing your heart hopes for.' },
+    { text: 'Dear Vinimaa,', cls: 'salutation' },
+    { text: 'Many, many happy returns of the day❤️🎂' },
+    { text: 'You will never know how important you are to me and how grateful I am to have you in my life. You have always understood me without judging me. You never complain about me, and whenever I have something going on, you always try to understand it and help me figure things out.' },
+    { text: 'what I love about you is that you always appreciate my efforts and, more importantly, the love I have for you. That means more to me than I can ever explain. You bring so much warmth and sweetness into my life. Every moment with you is precious.' },
+    { text: 'I want to spend the rest of my life with you, sharing all the good and bad days, growing together, supporting each other, and creating a beautiful life together. On your special day, I wish you endless love, laughter, and every little thing your heart hopes for❤️.' },
     { text: '— Yours forever 💗', cls: 'sign' },
   ];
 
@@ -1189,6 +1188,7 @@
     letterStarted = false;
     letterChars = [];
     letterBody.innerHTML = '';
+    letterBody.scrollTop = 0;
 
     letterLines.forEach(line => {
       const p = document.createElement('p');
@@ -1219,18 +1219,37 @@
     skipBtn.classList.remove('hidden');
   }
 
+  // The letter body scrolls, so pen offsets are measured against the scrolled
+  // content — not the visible box — and the view follows the nib down the page.
   function movePen(charEl) {
     if (!letterPen) return;
     const r = charEl.getBoundingClientRect();
     const b = letterBody.getBoundingClientRect();
+    const x = r.right - b.left + letterBody.scrollLeft;
+    const y = r.top   - b.top  + letterBody.scrollTop;
     letterPen.style.opacity = '1';
-    letterPen.style.transform = `translate(${r.right - b.left}px, ${r.top - b.top}px)`;
+    letterPen.style.transform = `translate(${x}px, ${y}px)`;
+    keepPenInView(charEl);
+  }
+
+  function keepPenInView(charEl) {
+    const top    = charEl.offsetTop;
+    const bottom = top + charEl.offsetHeight;
+    const viewTop    = letterBody.scrollTop;
+    const viewBottom = viewTop + letterBody.clientHeight;
+    if (bottom > viewBottom - 6) {
+      letterBody.scrollTop = bottom - letterBody.clientHeight + 6;
+    } else if (top < viewTop) {
+      letterBody.scrollTop = top;
+    }
   }
 
   function finishLetter() {
     clearTimeout(letterTimer);
     letterChars.forEach(c => c.classList.add('ink'));
     if (letterPen) letterPen.style.opacity = '0';
+    // Back to "Dear …" so she can read the whole thing at her own pace.
+    letterBody.scrollTop = 0;
     skipBtn.classList.add('hidden');
     letterContinue.classList.remove('hidden');
   }
