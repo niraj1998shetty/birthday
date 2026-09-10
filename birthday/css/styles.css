@@ -1335,6 +1335,214 @@ html, body {
   color: #3a1a24;
 }
 
+/* -------- Screen 10.5: birthday wish reels -------- */
+.reel-list {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: clamp(8px, 3vw, 18px);
+  flex-wrap: wrap;
+  width: 100%;
+  margin: 4px 0;
+}
+.reel {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: clamp(92px, 26vw, 132px);
+  transition: transform .18s ease;
+}
+.reel:hover  { transform: translateY(-3px); }
+.reel:active { transform: scale(.97); }
+
+.reel-poster {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(150deg, #ffd1dc, #f4a6b8 60%, #e8899f);
+  background-size: cover;
+  background-position: center;
+  border: 2px solid #fff;
+  box-shadow: 0 12px 26px rgba(230, 58, 107, .22);
+  transition: box-shadow .25s ease, border-color .25s ease, filter .25s ease;
+}
+.reel-emoji {
+  font-size: clamp(1.6rem, 6vw, 2.2rem);
+  filter: drop-shadow(0 3px 6px rgba(58, 26, 36, .25));
+}
+.reel-poster.has-photo .reel-emoji { display: none; }
+
+/* Everything sitting on top of the frame */
+.reel-num {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: rgba(58, 26, 36, .55);
+  color: #fff;
+  font-size: .7rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reel-dur {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: rgba(58, 26, 36, .55);
+  color: #fff;
+  font-size: .62rem;
+  letter-spacing: .3px;
+}
+.reel-dur:empty { display: none; }
+.reel-play {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .92);
+  color: var(--pink);
+  font-size: .8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 3px;
+  box-shadow: 0 6px 16px rgba(58, 26, 36, .28);
+  transition: transform .2s ease, opacity .2s ease;
+}
+.reel:hover .reel-play { transform: scale(1.1); }
+
+.reel-lock,
+.reel-tick { display: none; }
+
+/* The one she can play next — a soft pink pulse to point the way */
+.reel.next .reel-poster {
+  border-color: var(--pink);
+  animation: reelPulse 1.9s ease-in-out infinite;
+}
+@keyframes reelPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(230, 58, 107, .34), 0 12px 26px rgba(230, 58, 107, .22); }
+  50%      { box-shadow: 0 0 0 8px rgba(230, 58, 107, 0),  0 12px 26px rgba(230, 58, 107, .22); }
+}
+
+.reel.locked { cursor: not-allowed; }
+.reel.locked .reel-poster { filter: grayscale(.55) brightness(.92); border-color: #f0d5dd; }
+.reel.locked .reel-poster::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(58, 26, 36, .3);
+}
+.reel.locked .reel-play { opacity: 0; }
+.reel.locked .reel-lock {
+  display: flex;
+  position: relative;
+  z-index: 1;
+  font-size: 1.1rem;
+}
+
+.reel.watched .reel-poster { border-color: #7fd1a3; }
+.reel.watched .reel-play { opacity: 0; }
+.reel.watched .reel-tick {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #7fd1a3;
+  color: #fff;
+  font-size: .8rem;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(58, 26, 36, .25);
+}
+
+.reel.shake { animation: reelShake .4s ease; }
+@keyframes reelShake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-5px); }
+  75%      { transform: translateX(5px); }
+}
+
+/* Portrait player */
+.video-modal { padding: 12px; }
+.video-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+}
+.video-frame {
+  position: relative;
+  height: min(70dvh, 660px);
+  aspect-ratio: 9 / 16;
+  max-width: 92vw;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #23131a;
+  border: 3px solid #fff;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .45);
+}
+.video-frame video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #23131a;
+}
+.video-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(58, 26, 36, .6);
+  color: #fff;
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .3px;
+  pointer-events: none;
+}
+.video-caption {
+  margin: 0;
+  max-width: min(92vw, 420px);
+  text-align: center;
+  font-size: .85rem;
+  line-height: 1.45;
+  color: #fff0f5;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, .5);
+}
+.video-modal .btn-ghost {
+  background: rgba(255, 255, 255, .92);
+}
+
+/* Short phones: keep the frame, the caption and the close button all on screen */
+@media (max-height: 700px) {
+  .video-frame { height: min(62dvh, 480px); }
+  .video-caption { font-size: .78rem; }
+}
+
 /* -------- Screen 11: envelope -------- */
 .letter-heading {
   font-size: clamp(1.3rem, 4.4vw, 1.9rem);

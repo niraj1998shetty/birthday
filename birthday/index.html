@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Dancing+Script:wght@600;700&family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css?v=12" />
+  <link rel="stylesheet" href="css/styles.css?v=13" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎂%3C/text%3E%3C/svg%3E" />
 </head>
 <body>
@@ -436,6 +436,32 @@
       </div>
     </section>
 
+    <!-- ============ SCREEN 10.5: BIRTHDAY WISH REELS ============ -->
+    <section class="screen" data-screen="videos">
+      <div class="stack">
+        <h2 class="title-script sm">Birth day video Edits <span class="rose">🎬</span></h2>
+        <p class="tiny" id="reelHint">Tap the first reel — the rest unlock one by one 💗</p>
+
+        <!-- Cards are injected by JS; drop your reels in images/videos/ as video1.mp4, video2.mp4 … -->
+        <div class="reel-list" id="reelList"></div>
+
+        <p class="counter"><span id="reelsWatched">0</span> / <span id="reelsTotal">0</span> watched</p>
+        <button class="btn btn-primary sm hidden" id="videosContinue">Continue →</button>
+      </div>
+    </section>
+
+    <!-- Portrait (9:16) player for the reels above -->
+    <div class="modal video-modal hidden" id="videoModal" role="dialog" aria-modal="true" aria-labelledby="videoCaption">
+      <div class="video-card">
+        <div class="video-frame">
+          <video id="reelPlayer" playsinline controls preload="metadata"></video>
+          <span class="video-badge" id="videoBadge" aria-hidden="true"></span>
+        </div>
+        <p class="video-caption" id="videoCaption"></p>
+        <button class="btn btn-ghost sm" id="videoCloseBtn" type="button">Close ✕</button>
+      </div>
+    </div>
+
     <!-- ============ SCREEN 11: THE ENVELOPE ============ -->
     <section class="screen" data-screen="envelope">
       <div class="stack">
@@ -509,6 +535,6 @@
   <!-- Audio: source is set by JS once a song is picked on the "Pick Our Song" screen. -->
   <audio id="bgm" loop preload="none"></audio>
 
-  <script src="js/app.js?v=12"></script>
+  <script src="js/app.js?v=13"></script>
 </body>
 </html>

@@ -82,6 +82,8 @@
     if (name === 'final') startConfetti();
     if (name === 'letter') startLetter();
     if (name === 'scratch') sizeScratchCanvas();
+    if (name === 'videos') loadReelPosters();
+    else if (!videoModal.classList.contains('hidden')) closeReel();   // e.g. the dev jumper
     // syncDevNav();   // dev nav — off for now
   }
 
@@ -153,6 +155,7 @@
     scratch:  'wheel',
     wheel:    'quiz',
     quiz:     'polaroid',
+    videos:   'envelope',
   };
 
   Object.entries(SKIP_TO).forEach(([from, to]) => {
@@ -1142,13 +1145,229 @@
     setTimeout(() => polaroidContinue.classList.remove('hidden'), 1400);
   });
 
-  polaroidContinue.addEventListener('click', () => show('envelope'));
+  polaroidContinue.addEventListener('click', () => show('videos'));
 
   function resetPolaroid() {
     shutterBtn.disabled = false;
     polaroidEl.classList.remove('developed');
     polaroidHint.textContent = 'Tap the shutter 📸';
     polaroidContinue.classList.add('hidden');
+  }
+
+  /* ---------- Screen 10.5: birthday wish reels ----------------------------
+     Portrait 9:16 clips from images/videos/. To add another one, drop
+     video4.mp4 in that folder and add a line to REELS — the list, the
+     counter and the unlock chain all follow the array. */
+  const REELS = [
+    { src: 'images/videos/video1.mp4', emoji: '😂', caption: 'Do not watch this one with a straight face 😂' },
+    { src: 'images/videos/video2.mp4', emoji: '💗', caption: 'This one is straight from the heart 💗' },
+    { src: 'images/videos/video3.mp4', emoji: '🎂', caption: 'Saved the sweetest for last 🎂' },
+  ];
+
+  const reelList        = document.getElementById('reelList');
+  const reelHint        = document.getElementById('reelHint');
+  const reelsWatchedEl  = document.getElementById('reelsWatched');
+  const reelsTotalEl    = document.getElementById('reelsTotal');
+  const videosContinue  = document.getElementById('videosContinue');
+  const videoModal      = document.getElementById('videoModal');
+  const videoCaption    = document.getElementById('videoCaption');
+  const videoBadge      = document.getElementById('videoBadge');
+  const videoCloseBtn   = document.getElementById('videoCloseBtn');
+  const reelPlayer      = document.getElementById('reelPlayer');
+
+  let reelCards   = [];
+  let reelWatched = [];
+  let reelOpen    = -1;          // index currently in the player, -1 when closed
+  let reelMusicWasOn = false;
+  let reelCloseTimer = null;
+  let reelPostersLoaded = false;
+  let reelCelebrated = false;
+
+  function reelsAllWatched() {
+    return reelWatched.every(Boolean);
+  }
+
+  // Locked until the one before it has been watched, so she goes in order
+  // and the funny one always lands first.
+  function reelUnlocked(i) {
+    return i === 0 || reelWatched[i - 1];
+  }
+
+  function renderReels() {
+    reelCards.forEach((card, i) => {
+      card.classList.toggle('watched', reelWatched[i]);
+      card.classList.toggle('locked', !reelUnlocked(i));
+      card.classList.toggle('next', reelUnlocked(i) && !reelWatched[i]);
+    });
+    const done = reelWatched.filter(Boolean).length;
+    reelsWatchedEl.textContent = String(done);
+    if (done === REELS.length) {
+      reelHint.textContent = 'That is all of them — thank you for watching 💗';
+      videosContinue.classList.remove('hidden');
+    }
+  }
+
+  function formatDuration(sec) {
+    if (!isFinite(sec) || sec <= 0) return '';
+    const m = Math.floor(sec / 60);
+    const s = Math.round(sec % 60);
+    return `${m}:${String(s).padStart(2, '0')}`;
+  }
+
+  // Grabs a frame out of the clip itself for the thumbnail — no extra files to
+  // ship. Canvas reads are blocked on file:// in some browsers, so the emoji
+  // placeholder simply stays put when that happens.
+  function loadReelPoster(reel, card) {
+    const poster = card.querySelector('.reel-poster');
+    const durEl  = card.querySelector('.reel-dur');
+    const probe = document.createElement('video');
+    probe.preload = 'metadata';
+    probe.muted = true;
+    probe.playsInline = true;
+    probe.src = reel.src;
+
+    probe.addEventListener('loadedmetadata', () => {
+      durEl.textContent = formatDuration(probe.duration);
+      // A frame a moment in, so we skip any black lead-in.
+      try { probe.currentTime = Math.min(1.2, (probe.duration || 3) / 4); } catch { /* ignore */ }
+    });
+    probe.addEventListener('seeked', () => {
+      try {
+        const cv = document.createElement('canvas');
+        cv.width = 108;
+        cv.height = 192;
+        cv.getContext('2d').drawImage(probe, 0, 0, cv.width, cv.height);
+        poster.style.backgroundImage = `url('${cv.toDataURL('image/jpeg', .72)}')`;
+        poster.classList.add('has-photo');
+      } catch { /* tainted canvas — keep the emoji */ }
+    }, { once: true });
+    probe.addEventListener('error', () => { durEl.textContent = ''; });
+  }
+
+  function buildReels() {
+    reelList.innerHTML = '';
+    reelCards = [];
+    reelPostersLoaded = false;
+    reelCelebrated = false;
+    reelWatched = REELS.map(() => false);
+    reelsTotalEl.textContent = String(REELS.length);
+    reelsWatchedEl.textContent = '0';
+    reelHint.textContent = 'Tap the first reel — the rest unlock one by one 💗';
+    videosContinue.classList.add('hidden');
+
+    REELS.forEach((reel, i) => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'reel';
+      card.innerHTML = `
+        <span class="reel-poster">
+          <span class="reel-emoji" aria-hidden="true">${reel.emoji}</span>
+          <span class="reel-num" aria-hidden="true">${i + 1}</span>
+          <span class="reel-dur" aria-hidden="true"></span>
+          <span class="reel-play" aria-hidden="true">▶</span>
+          <span class="reel-lock" aria-hidden="true">🔒</span>
+          <span class="reel-tick" aria-hidden="true">✓</span>
+        </span>
+      `;
+      card.setAttribute('aria-label', `Play video ${i + 1}`);
+      card.addEventListener('click', () => openReel(i));
+      reelList.appendChild(card);
+      reelCards.push(card);
+    });
+
+    renderReels();
+  }
+  buildReels();
+
+  // Thumbnails pull a frame out of each clip, so hold off until she is
+  // actually on this screen — no video data on her plan before then.
+  function loadReelPosters() {
+    if (reelPostersLoaded) return;
+    reelPostersLoaded = true;
+    REELS.forEach((reel, i) => loadReelPoster(reel, reelCards[i]));
+  }
+
+  function openReel(i) {
+    if (!reelUnlocked(i)) {
+      reelHint.textContent = `Open video ${i} first — no skipping ahead 🙈`;
+      reelCards[i].classList.remove('shake');
+      void reelCards[i].offsetWidth;
+      reelCards[i].classList.add('shake');
+      return;
+    }
+    clearTimeout(reelCloseTimer);
+    reelOpen = i;
+    videoCaption.textContent = REELS[i].caption;
+    videoBadge.textContent = `Video ${i + 1} of ${REELS.length}`;
+    reelPlayer.src = REELS[i].src;
+    reelPlayer.currentTime = 0;
+    videoModal.classList.remove('hidden');
+
+    // The song would fight the video — hush it while she watches.
+    reelMusicWasOn = !musicMuted;
+    if (reelMusicWasOn) setMusicMuted(true);
+
+    // Started by her tap, so sound is allowed; if the browser still says no,
+    // the native controls are right there.
+    reelPlayer.play().catch(() => {});
+
+    // Opening it is enough — she can stop whenever she likes and the next one
+    // is already waiting for her.
+    markReelWatched(i);
+  }
+
+  function markReelWatched(i) {
+    if (i < 0 || reelWatched[i]) return;
+    reelWatched[i] = true;
+    renderReels();
+  }
+
+  function closeReel() {
+    clearTimeout(reelCloseTimer);
+    reelPlayer.pause();
+    reelPlayer.removeAttribute('src');
+    reelPlayer.load();
+    videoModal.classList.add('hidden');
+    reelOpen = -1;
+    if (reelMusicWasOn) {
+      setMusicMuted(false);
+      tryPlayMusic();
+      reelMusicWasOn = false;
+    }
+    // Celebrate once the player is out of the way, not over the top of it.
+    if (reelsAllWatched() && !reelCelebrated) {
+      reelCelebrated = true;
+      burstConfetti(70);
+      spawnHearts(10);
+    }
+  }
+
+  reelPlayer.addEventListener('ended', () => {
+    videoCaption.textContent = reelsAllWatched()
+      ? 'That is every one of them 💗'
+      : 'The next one just unlocked 💗';
+    reelCloseTimer = setTimeout(closeReel, 1100);
+  });
+
+  // A missing or unplayable file should not hold up the screen.
+  reelPlayer.addEventListener('error', () => {
+    if (reelOpen < 0) return;
+    videoCaption.textContent = 'This one would not play — moving you along 💗';
+    reelCloseTimer = setTimeout(closeReel, 1200);
+  });
+
+  videoCloseBtn.addEventListener('click', closeReel);
+  videoModal.addEventListener('click', e => { if (e.target === videoModal) closeReel(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !videoModal.classList.contains('hidden')) closeReel();
+  });
+
+  videosContinue.addEventListener('click', () => show('envelope'));
+
+  function resetReels() {
+    if (!videoModal.classList.contains('hidden')) closeReel();
+    reelMusicWasOn = false;
+    buildReels();
   }
 
   /* ---------- Screen 11: envelope ---------- */
@@ -1314,6 +1533,7 @@
     resetQuiz();
     buildPuzzle();
     resetPolaroid();
+    resetReels();
     envelope.classList.remove('open');
     envHint.textContent = 'Tap the envelope to open 💌';
     buildLetter();
